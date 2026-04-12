@@ -126,7 +126,7 @@ Official docs also document query parameters:
 
 ### Optional: project template file
 
-A **non-secret** example is in **`.cursor/mcp.json.example`**. Copy it to **`.cursor/mcp.json`**, fill in your **`project_ref`**, and use a [personal access token](https://supabase.com/dashboard/account/tokens) only if your client does not support the default OAuth flow (e.g. CI). **Do not commit** real tokens.
+A **non-secret** example is in **`mcp.json.example`** at the repo root. Copy it to **`.cursor/mcp.json`**, fill in your **`project_ref`**, and use a [personal access token](https://supabase.com/dashboard/account/tokens) only if your client does not support the default OAuth flow (e.g. CI). **Do not commit** real tokens.
 
 ### Security (from Supabase)
 

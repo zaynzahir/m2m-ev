@@ -1,63 +1,66 @@
-# M2M
+# M2M Network: The Decentralized Power Grid for Machines
 
-Next.js app for the M2M charging network (Solana wallet + Supabase).
+M2M (Machine to Machine) is a Decentralized Physical Infrastructure Network (DePIN) built natively on Solana. We connect EV drivers with idle residential and commercial charging capacity, transforming home chargers into permissionless, monetizable nodes settled instantly on-chain.
 
-**Open source:** the M2M application and related protocol tooling are developed in the open. In the running app, see **Docs** (`/docs`) and **Whitepaper** (`/whitepaper`); in this repo, `app/docs/page.tsx` and `app/whitepaper/page.tsx` carry the same messaging.
+## 🌐 The Protocol
 
-## Development
+The M2M architecture solves the core issues of peer-to-peer physical infrastructure using three protocol layers:
+
+- **Scan-to-Authenticate (Proof of Presence):** Prevents location spoofing by requiring physical QR-code verification at the node before energy is authorized.
+- **Dual-Verification Oracle:** Reconciles hardware telemetry (OCPP) with vehicle API data to ensure trustless energy measurement.
+- **Trustless Escrow:** Utilizes Solana smart contracts to lock session funds and execute sub-second settlements with near-zero fees.
+
+## 🛠 Tech Stack
+
+- **Frontend:** Next.js (React), Tailwind CSS
+- **Backend & Auth:** Supabase (PostgreSQL)
+- **Blockchain:** Solana Web3.js, Anchor (Rust smart contracts)
+- **Mapping:** Mapbox GL
+
+## 🚀 Local Development Setup
+
+To run the M2M interface and interact with the Devnet escrow programs locally:
+
+### 1. Clone and install
 
 ```bash
+git clone https://github.com/zaynzahir/m2m-ev.git
+cd m2m-ev
 npm install
-cp .env.example .env.local         # optional template; configure env vars below
+```
+
+### 2. Environment configuration
+
+Copy the example environment file and configure your keys.
+
+```bash
+cp .env.example .env.local
+```
+
+**Required keys in `.env.local`:**
+
+- `NEXT_PUBLIC_SUPABASE_URL` & `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_MAPBOX_TOKEN`
+- `NEXT_PUBLIC_ESCROW_PUBLIC_KEY` (Solana Devnet Base58 address)
+
+### 3. Database setup
+
+Apply the SQL migrations located in the `supabase/` directory in sequential order via the Supabase SQL Editor. Ensure the `migration_phase11_auth_user_profile.sql` trigger is active.
+
+### 4. Run the client
+
+```bash
 npm run dev
 ```
 
-### Environment
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-- **Supabase**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- **Mapbox**: `NEXT_PUBLIC_MAPBOX_TOKEN`
-- **Solana / demo escrow**: `NEXT_PUBLIC_ESCROW_PUBLIC_KEY` (devnet base58 pubkey)
-- **OAuth (optional)**: enable Google/Apple in the Supabase dashboard and set redirect URLs to `{origin}/auth/callback`. For server-side OAuth edge cases you can set `NEXT_PUBLIC_SITE_URL` to the site origin.
+## 📜 Open Source & Contributions
 
-### Database
+The M2M application and related protocol tooling are developed in the open. We welcome contributions from the Solana and DePIN communities. Please see the [Whitepaper](app/whitepaper/page.tsx) and [Docs](app/docs/page.tsx) within the repository for deeper protocol specifications.
 
-Apply SQL in `supabase/` in order (see `supabase/README.md`). The `migration_phase11_auth_user_profile.sql` trigger keeps `public.users` in sync when email/OAuth users sign up.
+**Note on V1 demo:** The current repository reflects the V1 Devnet architecture. Escrow currently utilizes direct SOL transfers to a configured Devnet pubkey while the V2 Anchor programs undergo security audits.
 
-### Tests & CI
+## License
 
-```bash
-npm run test
-```
-
-GitHub Actions runs `npm ci`, `npm run test`, and `npm run build` on push/PR to `main` or `master`.
-
-### GitHub Pages (static deploy)
-
-The live app is **not** the repo README. Use **Settings → Pages → Build and deployment → Source: GitHub Actions** (not “Deploy from a branch”). The workflow [`.github/workflows/deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) sets **`STATIC_EXPORT=true`** so `next build` emits an **`out/`** folder (plain `next build` alone does **not**).
-
-If you added GitHub’s suggested **“Next.js”** workflow and see **Upload artifact / `tar: out: No such file`**, remove that workflow from **`.github/workflows/`** — it builds without static export. Keep only `deploy-github-pages.yml`.
-
-**Deploy fails with “Multiple artifacts named `github-pages`” (count 2):** usually either (a) a second workflow (e.g. `nextjs.yml`) also uploads the Pages artifact — delete it so only [`deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) uploads — or (b) a flaky finalize/retry left two artifacts with the same name; this repo uses **`actions/upload-pages-artifact@v5.0.0`** and **`actions/deploy-pages@v5`**, which pick the newest upload when duplicates exist.
-
-After a successful run, the site is at `https://<user>.github.io/<repo>/`. For OAuth, add that origin and `…/auth/callback` in Supabase.
-
-To enable **map + database + Solana demo** on the live site, add these as **repository Secrets** (Settings → Secrets and variables → Actions) so the static build can embed them:
-
-- **`NEXT_PUBLIC_SUPABASE_URL`** and **`NEXT_PUBLIC_SUPABASE_ANON_KEY`** — Supabase → Project Settings → API (Project URL and `anon` public key).
-- **`NEXT_PUBLIC_MAPBOX_TOKEN`** — Mapbox account token (you already have this).
-- **`NEXT_PUBLIC_ESCROW_PUBLIC_KEY`** (optional) — devnet base58 pubkey for the demo escrow receiver; matches what the app reads in `lib/constants/escrow.ts`.
-
-They are already wired in [`deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml). Without Supabase secrets, the app still loads but data/auth features stay offline. Redeploy after adding secrets so a new build picks them up.
-
-### Local tooling
-
-If `npm install` fails with `errno -70` or odd file errors on macOS, move the project out of iCloud/Desktop-synced folders and use a normal local directory so `node_modules` is not synced. iCloud conflict copies (e.g. `node_modules 2`, `some-file 2.ts`) should be deleted; `tsconfig.json` excludes `node_modules 2` so TypeScript does not type-check those folders.
-
-## Product notes
-
-- **Escrow**: the demo uses a direct SOL transfer to a configured pubkey, not an on chain escrow program or USDC streaming. UI copy reflects that where relevant.
-- **Host listings**: demo RLS may be permissive; see `migration_phase12_rls_production_template.sql` for a stricter pattern before production.
-
-## Full product status & Supabase MCP
-
-See **[docs/PRODUCT_COMPLETE.md](docs/PRODUCT_COMPLETE.md)** for everything implemented, manual dashboard steps, and how to connect **Supabase MCP** in Cursor. Copy **`.cursor/mcp.json.example`** to **`.cursor/mcp.json`** if you configure MCP via file (do not commit secrets).
+This project is licensed under the [MIT License](LICENSE).

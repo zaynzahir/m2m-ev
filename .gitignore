@@ -33,8 +33,8 @@ yarn-error.log*
 .env.*
 !.env.example
 
-# Cursor MCP (may contain tokens); keep .cursor/mcp.json.example in repo
-.cursor/mcp.json
+# IDE — Cursor (local rules, MCP secrets); do not commit
+.cursor/
 
 # typescript
 *.tsbuildinfo
