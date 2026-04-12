@@ -37,7 +37,7 @@ The live app is **not** the repo README. Use **Settings → Pages → Build and 
 
 If you added GitHub’s suggested **“Next.js”** workflow and see **Upload artifact / `tar: out: No such file`**, remove that workflow from **`.github/workflows/`** — it builds without static export. Keep only `deploy-github-pages.yml`.
 
-**Deploy fails with “Multiple artifacts named `github-pages`” (count 2):** usually either (a) a second workflow (e.g. `nextjs.yml`) also uploads the Pages artifact — delete it so only [`deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) uploads — or (b) a flaky finalize/retry left two artifacts with the same name; this repo uses **`actions/upload-pages-artifact@v5`** and **`actions/deploy-pages@v5`**, which pick the newest upload when duplicates exist.
+**Deploy fails with “Multiple artifacts named `github-pages`” (count 2):** usually either (a) a second workflow (e.g. `nextjs.yml`) also uploads the Pages artifact — delete it so only [`deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) uploads — or (b) a flaky finalize/retry left two artifacts with the same name; this repo uses **`actions/upload-pages-artifact@v5.0.0`** and **`actions/deploy-pages@v5`**, which pick the newest upload when duplicates exist.
 
 After a successful run, the site is at `https://<user>.github.io/<repo>/`. For OAuth, add that origin and `…/auth/callback` in Supabase.
 

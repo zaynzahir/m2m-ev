@@ -59,8 +59,9 @@ jobs:
       - name: Disable Jekyll (keep _next)
         run: touch out/.nojekyll
 
-      # v5+ uses upload-artifact v7 and avoids duplicate-name finalize retries that break deploy-pages v4.
-      - uses: actions/upload-pages-artifact@v5
+      # Pin full semver: the `v5` major tag is not published for this action (only e.g. v5.0.0).
+      # v5.x uses upload-artifact v7 and avoids duplicate-name finalize issues with deploy-pages v4.
+      - uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: out
           # Keep .nojekyll (dotfile) in the tarball so GitHub Pages does not strip _next via Jekyll.
