@@ -268,10 +268,9 @@ export function ChargerMap() {
           <p className="text-sm text-on-surface-variant">
             Add{" "}
             <code className="text-primary">NEXT_PUBLIC_MAPBOX_TOKEN</code> in{" "}
-            <code className="text-primary">.env.local</code> for local dev, or as a
-            repository secret for GitHub Pages (see{" "}
-            <code className="text-primary">deploy-github-pages.yml</code>), then
-            rebuild.
+            <code className="text-primary">.env.local</code> for local dev, or set
+            it in your host environment (e.g. Vercel project environment variables),
+            then redeploy.
           </p>
           <a
             href="https://account.mapbox.com/access-tokens/"

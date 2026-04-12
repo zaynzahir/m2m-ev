@@ -3,19 +3,12 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** GitHub Pages serves the app under https://USER.github.io/REPO/ — set in CI only. */
+/** Optional static HTML export (`next build` → `out/`). Default Vercel build omits this. */
 const staticExport = process.env.STATIC_EXPORT === "true";
-const basePath = process.env.BASE_PATH?.trim() || "";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  env: {
-    NEXT_PUBLIC_BASE_PATH: basePath,
-  },
   ...(staticExport ? { output: "export" } : {}),
-  ...(basePath ? { basePath } : {}),
-  /** GitHub Pages + static export: directory-style URLs avoid 404 on refresh. */
-  ...(staticExport ? { trailingSlash: true } : {}),
   ...(staticExport ? { images: { unoptimized: true } } : {}),
   /**
    * Pin Turbopack to this app when another lockfile exists on the Desktop.

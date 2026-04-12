@@ -24,7 +24,7 @@ export type ChargerType =
 let browserClient: SupabaseClient | null = null;
 
 /**
- * Offline placeholder when public env vars are missing (e.g. GitHub Pages build without secrets).
+ * Offline placeholder when public env vars are missing (e.g. CI build without secrets).
  * Avoids throwing during React mount — map/profile still use `hasSupabasePublicConfig()` for real data.
  */
 function createOfflineSupabaseClient(): SupabaseClient {
