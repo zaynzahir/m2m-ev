@@ -11,11 +11,14 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+  # deploy-pages v5 reads workflow artifacts; avoids permission errors when resolving uploads
+  actions: read
 
 concurrency:
   group: pages
@@ -56,9 +59,12 @@ jobs:
       - name: Disable Jekyll (keep _next)
         run: touch out/.nojekyll
 
-      - uses: actions/upload-pages-artifact@v3
+      # v5+ uses upload-artifact v7 and avoids duplicate-name finalize retries that break deploy-pages v4.
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: out
+          # Keep .nojekyll (dotfile) in the tarball so GitHub Pages does not strip _next via Jekyll.
+          include-hidden-files: true
 
   deploy:
     needs: build
@@ -68,4 +74,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

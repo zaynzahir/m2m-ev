@@ -37,9 +37,17 @@ The live app is **not** the repo README. Use **Settings → Pages → Build and 
 
 If you added GitHub’s suggested **“Next.js”** workflow and see **Upload artifact / `tar: out: No such file`**, remove that workflow from **`.github/workflows/`** — it builds without static export. Keep only `deploy-github-pages.yml`.
 
+**Deploy fails with “Multiple artifacts named `github-pages`” (count 2):** usually either (a) a second workflow (e.g. `nextjs.yml`) also uploads the Pages artifact — delete it so only [`deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) uploads — or (b) a flaky finalize/retry left two artifacts with the same name; this repo uses **`actions/upload-pages-artifact@v5`** and **`actions/deploy-pages@v5`**, which pick the newest upload when duplicates exist.
+
 After a successful run, the site is at `https://<user>.github.io/<repo>/`. For OAuth, add that origin and `…/auth/callback` in Supabase.
 
-To enable **map + database** on the live site, add repository **Secrets** (or **Variables**) used at build time: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_MAPBOX_TOKEN`, and any other `NEXT_PUBLIC_*` keys from `.env.example`, then reference them in `deploy-github-pages.yml` under the static export step’s `env:` block (or use **GitHub Environments**). Without them, the app loads but Supabase/Map features stay in “not configured” mode.
+To enable **map + database + Solana demo** on the live site, add these as **repository Secrets** (Settings → Secrets and variables → Actions) so the static build can embed them:
+
+- **`NEXT_PUBLIC_SUPABASE_URL`** and **`NEXT_PUBLIC_SUPABASE_ANON_KEY`** — Supabase → Project Settings → API (Project URL and `anon` public key).
+- **`NEXT_PUBLIC_MAPBOX_TOKEN`** — Mapbox account token (you already have this).
+- **`NEXT_PUBLIC_ESCROW_PUBLIC_KEY`** (optional) — devnet base58 pubkey for the demo escrow receiver; matches what the app reads in `lib/constants/escrow.ts`.
+
+They are already wired in [`deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml). Without Supabase secrets, the app still loads but data/auth features stay offline. Redeploy after adding secrets so a new build picks them up.
 
 ### Local tooling
 
