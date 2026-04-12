@@ -3,58 +3,37 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { GridRoleModal } from "@/components/auth/GridRoleModal";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
-import { HostChargerControls } from "@/components/profile/HostChargerControls";
-import {
-  fetchChargersByOwnerId,
-  linkWalletToAuthProfile,
-} from "@/lib/supabase/client";
-import { SUPPORTED_CHARGER_BRANDS } from "@/lib/supported-brands";
+import { HostChargerManager } from "@/components/profile/HostChargerManager";
+import { linkWalletToAuthProfile } from "@/lib/supabase/client";
 import { useM2MProfile } from "@/hooks/useM2MProfile";
-import type { ChargerRow } from "@/lib/types/database";
-
-function chargerBrandLabel(slug: string | null | undefined) {
-  if (!slug) return null;
-  return SUPPORTED_CHARGER_BRANDS.find((b) => b.slug === slug)?.name ?? slug;
-}
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { connected, publicKey, disconnect } = useWallet();
   const walletModal = useWalletModal();
   const { profile, loading, refetch } = useM2MProfile();
-  const [chargers, setChargers] = useState<ChargerRow[]>([]);
-  const [chargersLoading, setChargersLoading] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [linking, setLinking] = useState(false);
   const walletLinkAttemptKey = useRef<string | null>(null);
 
-  const loadChargers = useCallback(async () => {
-    if (!profile?.id) return;
-    if (profile.role !== "host" && profile.role !== "both") {
-      setChargers([]);
-      return;
-    }
-    setChargersLoading(true);
-    try {
-      const rows = await fetchChargersByOwnerId(profile.id);
-      setChargers(rows);
-    } catch {
-      setChargers([]);
-    } finally {
-      setChargersLoading(false);
-    }
-  }, [profile?.id, profile?.role]);
-
   useEffect(() => {
-    void loadChargers();
-  }, [loadChargers]);
+    if (loading) return;
+    if (typeof window === "undefined") return;
+    if (window.location.hash !== "#charger-management") return;
+    requestAnimationFrame(() => {
+      document
+        .getElementById("charger-management")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [loading]);
 
   useEffect(() => {
     if (!user || !profile || profile.wallet_address || loading) return;
@@ -213,6 +192,15 @@ export default function ProfilePage() {
               </section>
             ) : null}
 
+            {profile &&
+            !profile.onboarding_completed_at &&
+            (user || publicKey) ? (
+              <GridRoleModal
+                profile={profile}
+                onCompleted={() => void refetch()}
+              />
+            ) : null}
+
             {needsWalletLink ? (
               <div
                 className="m2m-rise rounded-[2rem] border border-secondary/30 bg-secondary/10 p-6 shadow-[0_0_40px_rgba(185,132,255,0.12)] transition-all duration-500 ease-out sm:p-8"
@@ -341,60 +329,7 @@ export default function ProfilePage() {
             ) : null}
 
             {profile && showHost ? (
-              <section
-                className="m2m-rise glass-card rounded-[2rem] border border-white/10 p-6 transition-all duration-500 ease-out hover:border-white/15 sm:p-8"
-                style={{ animationDelay: "260ms" }}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <h2 className="font-headline text-lg font-bold text-on-surface">
-                    Host listings
-                  </h2>
-                  <Link
-                    href="/host"
-                    className="text-sm font-bold text-secondary hover:underline"
-                  >
-                    Add / manage
-                  </Link>
-                </div>
-                {chargersLoading ? (
-                  <p className="mt-4 text-sm text-on-surface-variant">
-                    Loading chargers…
-                  </p>
-                ) : chargers.length === 0 ? (
-                  <p className="mt-4 text-sm text-on-surface-variant">
-                    No chargers listed yet.
-                  </p>
-                ) : (
-                  <ul className="mt-4 space-y-3">
-                    {chargers.map((c) => (
-                      <li
-                        key={c.id}
-                        className="rounded-xl border border-white/10 bg-surface-container-low/40 px-4 py-3 transition-colors duration-300 hover:border-primary/20"
-                      >
-                        <p className="font-headline font-bold text-on-surface">
-                          {c.title ?? c.label ?? "Charger"}
-                        </p>
-                        <p className="mt-1 text-xs text-on-surface-variant">
-                          {[
-                            chargerBrandLabel(c.charger_brand_slug),
-                            c.plug_type,
-                            `$${Number(c.price_per_kwh).toFixed(2)}/kWh`,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </p>
-                        {profile?.id ? (
-                          <HostChargerControls
-                            charger={c}
-                            ownerId={profile.id}
-                            onChanged={() => void loadChargers()}
-                          />
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
+              <HostChargerManager ownerId={profile.id} />
             ) : null}
 
             {!profile ? (

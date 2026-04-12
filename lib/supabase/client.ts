@@ -1,4 +1,8 @@
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import {
+  createClient,
+  type SupabaseClient,
+  type User,
+} from "@supabase/supabase-js";
 
 import { getPublicEnv, hasSupabasePublicConfig } from "@/lib/env/public";
 import type {
@@ -89,23 +93,27 @@ export async function signUpWithEmail(
   const supabase = getSupabaseBrowserClient();
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;
-  await ensureAuthProfileRow();
+  const signedUpUser = data.user;
+  if (!signedUpUser) {
+    return { needsEmailConfirmation: true };
+  }
+  try {
+    await ensureAuthProfileRowForUser(signedUpUser);
+  } catch (e) {
+    console.warn(
+      "[M2M] Profile row sync after sign-up (non-fatal):",
+      e instanceof Error ? e.message : e,
+    );
+  }
   return { needsEmailConfirmation: !data.session };
 }
 
 /**
- * Ensures a `public.users` row exists for the current Supabase Auth user (backup if DB trigger is not installed).
- * Keeps email, auth_provider, and email_verified_at in sync with Auth on every call.
+ * Ensures a `public.users` row exists for the given Auth user (use the object returned from `signUp` / session).
+ * Prefer this right after sign-up: `getUser()` may not reflect the new user until a session exists.
  */
-export async function ensureAuthProfileRow(): Promise<void> {
+export async function ensureAuthProfileRowForUser(user: User): Promise<void> {
   const supabase = getSupabaseBrowserClient();
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabase.auth.getUser();
-  if (userErr) throw userErr;
-  if (!user) return;
-
   const provider = authProviderFromSupabaseUser(user);
   const verifiedAt = emailVerifiedAtIso(user);
 
@@ -140,6 +148,21 @@ export async function ensureAuthProfileRow(): Promise<void> {
     const msg = insErr.message ?? "";
     if (!/duplicate|unique/i.test(msg)) throw insErr;
   }
+}
+
+/**
+ * Ensures a `public.users` row exists for the current Supabase Auth user (backup if DB trigger is not installed).
+ * Keeps email, auth_provider, and email_verified_at in sync with Auth on every call.
+ */
+export async function ensureAuthProfileRow(): Promise<void> {
+  const supabase = getSupabaseBrowserClient();
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+  if (userErr) throw userErr;
+  if (!user) return;
+  await ensureAuthProfileRowForUser(user);
 }
 
 export async function signInWithOAuthProvider(
@@ -529,7 +552,11 @@ export async function updateAuthUserProfile(
   patch: Partial<
     Pick<
       UserProfileRow,
-      "display_name" | "vehicle_model" | "contact_method" | "role"
+      | "display_name"
+      | "vehicle_model"
+      | "contact_method"
+      | "role"
+      | "onboarding_completed_at"
     >
   >,
 ): Promise<void> {
@@ -552,7 +579,11 @@ export async function updateWalletUserProfile(
   patch: Partial<
     Pick<
       UserProfileRow,
-      "display_name" | "vehicle_model" | "contact_method" | "role"
+      | "display_name"
+      | "vehicle_model"
+      | "contact_method"
+      | "role"
+      | "onboarding_completed_at"
     >
   >,
 ): Promise<void> {
@@ -573,6 +604,81 @@ export async function updateUserRoleForWallet(
   role: UserRole,
 ): Promise<void> {
   await updateWalletUserProfile(walletAddress, { role });
+}
+
+/** Default map pin for chargers created from Profile (hosts can refine location on /host later). */
+const PROFILE_CHARGER_DEFAULT_LAT = 40.7128;
+const PROFILE_CHARGER_DEFAULT_LNG = -74.006;
+
+export async function insertChargerForAuthOwner(input: {
+  ownerId: string;
+  title: string;
+  plugType: ChargerType;
+  pricePerKwh: number;
+}): Promise<void> {
+  if (!Number.isFinite(input.pricePerKwh) || input.pricePerKwh <= 0) {
+    throw new Error("Price per kWh must be greater than zero.");
+  }
+  const supabase = getSupabaseBrowserClient();
+  const { error } = await supabase.from("chargers").insert({
+    owner_id: input.ownerId,
+    lat: PROFILE_CHARGER_DEFAULT_LAT,
+    lng: PROFILE_CHARGER_DEFAULT_LNG,
+    price_per_kwh: input.pricePerKwh,
+    status: "active",
+    title: input.title.trim(),
+    label: input.plugType,
+    plug_type: input.plugType,
+    description: "Listed from profile — pin shown at NYC hub until you place the node on the map.",
+    parking_instructions: "",
+    charger_brand_slug: "other",
+  });
+  if (error) throw error;
+}
+
+export async function updateChargerListingFieldsForOwner(
+  chargerId: string,
+  ownerId: string,
+  patch: {
+    title?: string;
+    plug_type?: string;
+    label?: string;
+    price_per_kwh?: number;
+    status?: ChargerRow["status"];
+  },
+): Promise<void> {
+  if (
+    patch.price_per_kwh !== undefined &&
+    (!Number.isFinite(patch.price_per_kwh) || patch.price_per_kwh <= 0)
+  ) {
+    throw new Error("Price per kWh must be greater than zero.");
+  }
+  const supabase = getSupabaseBrowserClient();
+  const { error } = await supabase
+    .from("chargers")
+    .update(patch)
+    .eq("id", chargerId)
+    .eq("owner_id", ownerId);
+  if (error) throw error;
+}
+
+export async function completeGridParticipationOnboarding(
+  role: UserRole,
+  opts: { authUser: boolean; walletAddress?: string | null },
+): Promise<void> {
+  const at = new Date().toISOString();
+  if (opts.authUser) {
+    await updateAuthUserProfile({ role, onboarding_completed_at: at });
+    return;
+  }
+  if (opts.walletAddress) {
+    await updateWalletUserProfile(opts.walletAddress, {
+      role,
+      onboarding_completed_at: at,
+    });
+    return;
+  }
+  throw new Error("Sign in or connect a wallet to continue.");
 }
 
 export async function setChargerListingStatusForOwner(

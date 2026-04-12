@@ -56,7 +56,7 @@ export function Roadmap() {
               rocket_launch
             </span>
             <span className="text-xs font-bold text-on-surface-variant/50">
-              Coming 2025
+              Coming Late 2026
             </span>
           </div>
         </div>

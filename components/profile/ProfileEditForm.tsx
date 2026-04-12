@@ -180,8 +180,8 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
             Your display name and contact below help drivers coordinate at the plug.
           </p>
           <Link
-            href="/host"
-            className="inline-flex items-center gap-1.5 font-headline text-sm font-bold text-secondary transition hover:underline"
+            href="/profile#charger-management"
+            className="inline-flex items-center gap-1.5 font-headline text-sm font-bold text-[#34fea0] transition hover:underline"
           >
             Register or edit chargers &amp; rates
             <span className="material-symbols-outlined text-base">arrow_forward</span>

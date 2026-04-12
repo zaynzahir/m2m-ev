@@ -45,12 +45,13 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
   if (needEmailConfirm) {
     return (
       <div className="mx-auto w-full max-w-md text-center m2m-rise">
-        <p className="font-headline text-lg font-bold text-on-surface">
-          Confirm your email
+        <p className="font-headline text-lg font-bold text-[#34fea0]">
+          Account created successfully
         </p>
         <p className="mt-3 text-sm text-on-surface-variant">
-          We sent a link to <strong className="text-on-surface">{email}</strong>.
-          After confirming, sign in or you will be redirected from the link.
+          Please check your email to verify your account. We sent a link to{" "}
+          <strong className="text-on-surface">{email}</strong>. After confirming,
+          sign in here or use the link from the email.
         </p>
         <button
           type="button"

@@ -20,10 +20,12 @@ export function EmailAuthTabs({ nextHref }: EmailAuthTabsProps) {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [signupSuccess, setSignupSuccess] = useState<string | null>(null);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSignupSuccess(null);
     setSubmitting(true);
     try {
       if (tab === "signin") {
@@ -34,8 +36,8 @@ export function EmailAuthTabs({ nextHref }: EmailAuthTabsProps) {
           password,
         );
         if (needsEmailConfirmation) {
-          setError(
-            "Check your email to confirm your account, then sign in here.",
+          setSignupSuccess(
+            "Account created successfully! Please check your email to verify, then sign in.",
           );
           return;
         }
@@ -91,6 +93,7 @@ export function EmailAuthTabs({ nextHref }: EmailAuthTabsProps) {
             onClick={() => {
               setTab("signin");
               setError(null);
+              setSignupSuccess(null);
             }}
           >
             Sign in
@@ -107,6 +110,7 @@ export function EmailAuthTabs({ nextHref }: EmailAuthTabsProps) {
             onClick={() => {
               setTab("signup");
               setError(null);
+              setSignupSuccess(null);
             }}
           >
             Create account
@@ -160,6 +164,11 @@ export function EmailAuthTabs({ nextHref }: EmailAuthTabsProps) {
             ) : null}
           </div>
 
+          {signupSuccess ? (
+            <p className="rounded-xl border border-primary/35 bg-primary/10 px-3 py-2 text-sm text-primary transition-opacity duration-200">
+              {signupSuccess}
+            </p>
+          ) : null}
           {error ? (
             <p className="rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm text-error transition-opacity duration-200">
               {error}

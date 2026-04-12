@@ -20,6 +20,8 @@ export type UserProfileRow = {
   auth_provider: string | null;
   /** ISO timestamp when email was confirmed (mirrors Supabase Auth). */
   email_verified_at: string | null;
+  /** Set after the grid participation (Driver / Host / Both) modal is completed. */
+  onboarding_completed_at?: string | null;
   created_at: string;
 };
 
