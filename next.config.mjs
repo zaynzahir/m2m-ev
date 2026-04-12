@@ -3,8 +3,17 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+/** GitHub Pages serves the app under https://USER.github.io/REPO/ — set in CI only. */
+const staticExport = process.env.STATIC_EXPORT === "true";
+const basePath = process.env.BASE_PATH?.trim() || "";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  ...(staticExport ? { output: "export" } : {}),
+  ...(basePath ? { basePath } : {}),
+  /** GitHub Pages + static export: directory-style URLs avoid 404 on refresh. */
+  ...(staticExport ? { trailingSlash: true } : {}),
+  ...(staticExport ? { images: { unoptimized: true } } : {}),
   /**
    * Pin Turbopack to this app when another lockfile exists on the Desktop.
    * Mapbox's default `dist/mapbox-gl.js` is a UMD/AMD bundle; Turbopack tries to

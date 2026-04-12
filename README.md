@@ -31,6 +31,10 @@ npm run test
 
 GitHub Actions runs `npm ci`, `npm run test`, and `npm run build` on push/PR to `main` or `master`.
 
+### GitHub Pages (static deploy)
+
+The live app is **not** the repo README. Use **Settings → Pages → Build and deployment → Source: GitHub Actions** (not “Deploy from a branch”). The workflow [`.github/workflows/deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) builds a static export (`STATIC_EXPORT` + `BASE_PATH=/repo-name`) and publishes the `out/` folder. After the first successful run, the site is at `https://<user>.github.io/<repo>/`. For OAuth, add that origin and `…/auth/callback` in Supabase.
+
 ### Local tooling
 
 If `npm install` fails with `errno -70` or odd file errors on macOS, move the project out of iCloud/Desktop-synced folders and use a normal local directory so `node_modules` is not synced. iCloud conflict copies (e.g. `node_modules 2`, `some-file 2.ts`) should be deleted; `tsconfig.json` excludes `node_modules 2` so TypeScript does not type-check those folders.
