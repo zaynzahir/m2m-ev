@@ -1,6 +1,10 @@
 # Deploy the Next.js static export to GitHub Pages (project site: /repo-name/).
-# After merging, set: Settings → Pages → Build and deployment → Source: GitHub Actions
-# (not "Deploy from a branch", which only shows README).
+# Requires next.config.mjs output: "export" (enabled via STATIC_EXPORT=true).
+#
+# If you added GitHub's "Next.js" template workflow, DELETE it — that one runs
+# `next build` without static export, so no `out/` folder and upload fails.
+#
+# Settings → Pages → Source: GitHub Actions (not "Deploy from a branch").
 
 name: Deploy GitHub Pages
 
@@ -20,6 +24,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      STATIC_EXPORT: "true"
+      BASE_PATH: /${{ github.event.repository.name }}
+      NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,15 +40,16 @@ jobs:
 
       - run: npm run test
 
-      - name: Static export for GitHub Pages
-        env:
-          STATIC_EXPORT: "true"
-          BASE_PATH: /${{ github.event.repository.name }}
-          NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+      - name: Static export (writes to out/)
         run: npm run build
 
-      # Prevent Jekyll from skipping folders like _next
-      - run: touch out/.nojekyll
+      - name: Verify export output
+        run: |
+          test -d out || (echo "::error::No out/ — STATIC_EXPORT may be off. See next.config.mjs and this workflow env." && exit 1)
+          ls -la out | head -20
+
+      - name: Disable Jekyll (keep _next)
+        run: touch out/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -33,7 +33,11 @@ GitHub Actions runs `npm ci`, `npm run test`, and `npm run build` on push/PR to 
 
 ### GitHub Pages (static deploy)
 
-The live app is **not** the repo README. Use **Settings → Pages → Build and deployment → Source: GitHub Actions** (not “Deploy from a branch”). The workflow [`.github/workflows/deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) builds a static export (`STATIC_EXPORT` + `BASE_PATH=/repo-name`) and publishes the `out/` folder. After the first successful run, the site is at `https://<user>.github.io/<repo>/`. For OAuth, add that origin and `…/auth/callback` in Supabase.
+The live app is **not** the repo README. Use **Settings → Pages → Build and deployment → Source: GitHub Actions** (not “Deploy from a branch”). The workflow [`.github/workflows/deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) sets **`STATIC_EXPORT=true`** so `next build` emits an **`out/`** folder (plain `next build` alone does **not**).
+
+If you added GitHub’s suggested **“Next.js”** workflow and see **Upload artifact / `tar: out: No such file`**, remove that workflow from **`.github/workflows/`** — it builds without static export. Keep only `deploy-github-pages.yml`.
+
+After a successful run, the site is at `https://<user>.github.io/<repo>/`. For OAuth, add that origin and `…/auth/callback` in Supabase.
 
 ### Local tooling
 
