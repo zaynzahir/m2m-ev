@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { publicAssetUrl } from "@/lib/asset-url";
+
 export type SupportedBrandItem = {
   name: string;
   slug: string;
@@ -16,7 +18,7 @@ function BrandRow({
   basePath: string;
 }) {
   const [showImage, setShowImage] = useState(true);
-  const src = `${basePath}/${item.slug}.png`;
+  const src = publicAssetUrl(`${basePath}/${item.slug}.png`);
 
   return (
     <li className="glass-card flex items-center gap-5 rounded-2xl border border-white/10 p-5 sm:gap-6 sm:p-7">

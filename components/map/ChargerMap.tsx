@@ -267,9 +267,11 @@ export function ChargerMap() {
           </p>
           <p className="text-sm text-on-surface-variant">
             Add{" "}
-            <code className="text-primary">NEXT_PUBLIC_MAPBOX_TOKEN</code> to{" "}
-            <code className="text-primary">.env.local</code> and restart{" "}
-            <code className="text-primary">npm run dev</code>.
+            <code className="text-primary">NEXT_PUBLIC_MAPBOX_TOKEN</code> in{" "}
+            <code className="text-primary">.env.local</code> for local dev, or as a
+            repository secret for GitHub Pages (see{" "}
+            <code className="text-primary">deploy-github-pages.yml</code>), then
+            rebuild.
           </p>
           <a
             href="https://account.mapbox.com/access-tokens/"

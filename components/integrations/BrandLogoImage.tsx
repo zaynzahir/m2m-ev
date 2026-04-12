@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { publicAssetUrl } from "@/lib/asset-url";
+
 type BasePath = "/supported-vehicles" | "/supported-chargers";
 
 type BrandLogoImageProps = {
@@ -17,7 +19,7 @@ type BrandLogoImageProps = {
  */
 export function BrandLogoImage({ name, slug, basePath }: BrandLogoImageProps) {
   const [failed, setFailed] = useState(false);
-  const src = `${basePath}/${slug}.png`;
+  const src = publicAssetUrl(`${basePath}/${slug}.png`);
 
   return (
     <div className="flex aspect-square w-44 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/25 p-4 shadow-inner sm:w-52 sm:p-5 md:w-56 md:p-6">

@@ -9,6 +9,9 @@ const basePath = process.env.BASE_PATH?.trim() || "";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   ...(staticExport ? { output: "export" } : {}),
   ...(basePath ? { basePath } : {}),
   /** GitHub Pages + static export: directory-style URLs avoid 404 on refresh. */
