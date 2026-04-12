@@ -1,10 +1,13 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { hasSupabasePublicConfig } from "@/lib/env/public";
 import type { UserProfileRow } from "@/lib/types/database";
 
 export async function fetchProfileForViewer(input: {
   authUserId?: string | null;
   walletAddress?: string | null;
 }): Promise<UserProfileRow | null> {
+  if (!hasSupabasePublicConfig()) return null;
+
   const supabase = getSupabaseBrowserClient();
 
   if (input.authUserId) {

@@ -39,6 +39,8 @@ If you added GitHub’s suggested **“Next.js”** workflow and see **Upload ar
 
 After a successful run, the site is at `https://<user>.github.io/<repo>/`. For OAuth, add that origin and `…/auth/callback` in Supabase.
 
+To enable **map + database** on the live site, add repository **Secrets** (or **Variables**) used at build time: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_MAPBOX_TOKEN`, and any other `NEXT_PUBLIC_*` keys from `.env.example`, then reference them in `deploy-github-pages.yml` under the static export step’s `env:` block (or use **GitHub Environments**). Without them, the app loads but Supabase/Map features stay in “not configured” mode.
+
 ### Local tooling
 
 If `npm install` fails with `errno -70` or odd file errors on macOS, move the project out of iCloud/Desktop-synced folders and use a normal local directory so `node_modules` is not synced. iCloud conflict copies (e.g. `node_modules 2`, `some-file 2.ts`) should be deleted; `tsconfig.json` excludes `node_modules 2` so TypeScript does not type-check those folders.

@@ -19,11 +19,27 @@ export type ChargerType =
 
 let browserClient: SupabaseClient | null = null;
 
+/**
+ * Offline placeholder when public env vars are missing (e.g. GitHub Pages build without secrets).
+ * Avoids throwing during React mount — map/profile still use `hasSupabasePublicConfig()` for real data.
+ */
+function createOfflineSupabaseClient(): SupabaseClient {
+  return createClient("https://offline.invalid", "offline", {
+    auth: {
+      flowType: "pkce",
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
 export function getSupabaseBrowserClient(): SupabaseClient {
   if (browserClient) return browserClient;
   const { supabaseUrl, supabaseAnonKey } = getPublicEnv();
   if (!supabaseUrl?.trim() || !supabaseAnonKey?.trim()) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set.");
+    browserClient = createOfflineSupabaseClient();
+    return browserClient;
   }
   browserClient = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
