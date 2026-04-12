@@ -1,0 +1,24 @@
+-- OPTIONAL production-hardening template (do not run blindly).
+-- Current app relies on anon insert/update for wallet-only flows without a backend signer.
+--
+-- Before applying:
+-- 1) Add Next.js Route Handlers or Edge Functions that use SUPABASE_SERVICE_ROLE_KEY
+--    for wallet-based writes, OR require all users to use Supabase Auth + JWT.
+-- 2) Replace anon write policies below with authenticated-only policies.
+--
+-- Example authenticated policy (pattern only):
+--
+-- drop policy if exists "users_insert_anon" on public.users;
+-- create policy "users_insert_own_auth"
+--   on public.users for insert to authenticated
+--   with check (auth.uid() = auth_user_id);
+--
+-- create policy "users_update_own_auth"
+--   on public.users for update to authenticated
+--   using (auth.uid() = auth_user_id)
+--   with check (auth.uid() = auth_user_id);
+--
+-- Chargers: restrict insert/update to rows where owner_id references users.id
+-- and users.auth_user_id = auth.uid().
+--
+-- See: https://supabase.com/docs/guides/auth/row-level-security

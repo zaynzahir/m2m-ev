@@ -1,0 +1,40 @@
+# dependencies
+/node_modules
+/node_modules 2
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment — real keys only in ignored files (e.g. .env.local)
+.env
+.env.*
+!.env.example
+
+# Cursor MCP (may contain tokens); keep .cursor/mcp.json.example in repo
+.cursor/mcp.json
+
+# typescript
+*.tsbuildinfo
