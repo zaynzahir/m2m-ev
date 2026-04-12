@@ -12,7 +12,7 @@ export function Roadmap() {
           <h3 className="font-headline text-2xl font-bold">The MVP (Current)</h3>
           <p className="text-on-surface-variant leading-relaxed">
             Web App launch, Solana Devnet Escrow Smart Contract deployed, Mapbox
-            integration, and local Beta testing in Istanbul.
+            integration, and local Beta testing in New York.
           </p>
           <div className="flex items-center gap-2 text-primary">
             <span
