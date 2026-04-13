@@ -103,8 +103,10 @@ export function Navbar() {
                 {mobileOpen ? "close" : "menu"}
               </span>
             </button>
-            <ProfileMenu />
-            <WalletConnectButton variant="nav" />
+            <div className="hidden items-center gap-2 sm:gap-3 lg:flex">
+              <ProfileMenu />
+              <WalletConnectButton variant="nav" />
+            </div>
           </div>
         </div>
       </nav>
