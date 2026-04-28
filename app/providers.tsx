@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 
 import { AuthSessionProvider } from "@/components/auth/AuthSessionProvider";
+import { WalletFirstTimeProfileModal } from "@/components/auth/WalletFirstTimeProfileModal";
+import { WalletSupabaseSync } from "@/components/auth/WalletSupabaseSync";
 
 import { WalletContextProvider } from "./WalletContextProvider";
 
@@ -13,7 +15,11 @@ import { WalletContextProvider } from "./WalletContextProvider";
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <WalletContextProvider>
-      <AuthSessionProvider>{children}</AuthSessionProvider>
+      <AuthSessionProvider>
+        <WalletSupabaseSync />
+        <WalletFirstTimeProfileModal />
+        {children}
+      </AuthSessionProvider>
     </WalletContextProvider>
   );
 }

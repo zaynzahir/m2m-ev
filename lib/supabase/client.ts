@@ -8,6 +8,8 @@ import { getPublicEnv, hasSupabasePublicConfig } from "@/lib/env/public";
 import type {
   ChargerRow,
   ChargingChargerRow,
+  ChargerSessionPreviewRpc,
+  ChargingSessionIntentStage,
   ChargingSessionReceiptRow,
   DriverLocationRow,
   UserProfileRow,
@@ -74,6 +76,18 @@ function emailVerifiedAtIso(user: User): string | null {
   }
 }
 
+function roleFromMetadata(user: User): UserRole {
+  const raw = user.user_metadata?.role;
+  if (raw === "driver" || raw === "host" || raw === "both") return raw;
+  return "driver";
+}
+
+function optionalString(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 export async function signOutAll(): Promise<void> {
   const supabase = getSupabaseBrowserClient();
   await supabase.auth.signOut();
@@ -89,9 +103,29 @@ export async function signInWithEmail(email: string, password: string): Promise<
 export async function signUpWithEmail(
   email: string,
   password: string,
+  profileInput?: {
+    role?: UserRole;
+    displayName?: string;
+    vehicleModel?: string;
+    contactMethod?: string;
+    walletAddress?: string;
+  },
 ): Promise<{ needsEmailConfirmation: boolean }> {
   const supabase = getSupabaseBrowserClient();
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const role = profileInput?.role ?? "driver";
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        role,
+        display_name: profileInput?.displayName?.trim() || null,
+        vehicle_model: profileInput?.vehicleModel?.trim() || null,
+        contact_method: profileInput?.contactMethod?.trim() || null,
+        wallet_address: profileInput?.walletAddress?.trim() || null,
+      },
+    },
+  });
   if (error) throw error;
   const signedUpUser = data.user;
   if (!signedUpUser) {
@@ -116,6 +150,11 @@ export async function ensureAuthProfileRowForUser(user: User): Promise<void> {
   const supabase = getSupabaseBrowserClient();
   const provider = authProviderFromSupabaseUser(user);
   const verifiedAt = emailVerifiedAtIso(user);
+  const metadataRole = roleFromMetadata(user);
+  const metadataDisplayName = optionalString(user.user_metadata?.display_name);
+  const metadataVehicleModel = optionalString(user.user_metadata?.vehicle_model);
+  const metadataContactMethod = optionalString(user.user_metadata?.contact_method);
+  const metadataWalletAddress = optionalString(user.user_metadata?.wallet_address);
 
   const { data: existing, error: findErr } = await supabase
     .from("users")
@@ -131,6 +170,15 @@ export async function ensureAuthProfileRowForUser(user: User): Promise<void> {
         email: user.email ?? null,
         auth_provider: provider,
         email_verified_at: verifiedAt,
+        role: metadataRole,
+        display_name: metadataDisplayName,
+        vehicle_model: metadataVehicleModel,
+        contact_method: metadataContactMethod,
+        wallet_address: metadataWalletAddress,
+        onboarding_completed_at:
+          metadataDisplayName || metadataContactMethod || metadataVehicleModel
+            ? new Date().toISOString()
+            : null,
       })
       .eq("auth_user_id", user.id);
     if (upErr) throw upErr;
@@ -140,7 +188,15 @@ export async function ensureAuthProfileRowForUser(user: User): Promise<void> {
   const { error: insErr } = await supabase.from("users").insert({
     auth_user_id: user.id,
     email: user.email ?? null,
-    role: "driver",
+    role: metadataRole,
+    display_name: metadataDisplayName,
+    vehicle_model: metadataVehicleModel,
+    contact_method: metadataContactMethod,
+    wallet_address: metadataWalletAddress,
+    onboarding_completed_at:
+      metadataDisplayName || metadataContactMethod || metadataVehicleModel
+        ? new Date().toISOString()
+        : null,
     auth_provider: provider,
     email_verified_at: verifiedAt,
   });
@@ -238,6 +294,30 @@ export async function fetchProfileForMapContext(
   return null;
 }
 
+export type DashboardIdentity = {
+  profile: UserProfileRow | null;
+  resolvedRole: UserRole;
+  walletAddress: string | null;
+  emailVerified: boolean;
+};
+
+/**
+ * Resolves dashboard identity from auth user + wallet context.
+ * Uses profile role when available and falls back to driver safely.
+ */
+export async function fetchDashboardIdentity(
+  walletAddress: string | null,
+): Promise<DashboardIdentity> {
+  const profile = await fetchProfileForMapContext(walletAddress);
+  const resolvedRole: UserRole = profile?.role ?? "driver";
+  return {
+    profile,
+    resolvedRole,
+    walletAddress: profile?.wallet_address ?? walletAddress ?? null,
+    emailVerified: Boolean(profile?.email_verified_at),
+  };
+}
+
 export async function fetchUserProfileByWallet(
   walletAddress: string,
 ): Promise<UserProfileRow | null> {
@@ -266,6 +346,31 @@ export async function upsertDriverProfile(input: {
       contact_method: input.contactMethod,
       role: "driver",
       auth_provider: "wallet",
+    },
+    { onConflict: "wallet_address" },
+  );
+  if (error) throw error;
+}
+
+export async function upsertWalletFirstProfile(input: {
+  walletAddress: string;
+  role: UserRole;
+  displayName?: string;
+  vehicleModel?: string;
+  contactMethod?: string;
+  email?: string;
+}): Promise<void> {
+  const supabase = getSupabaseBrowserClient();
+  const { error } = await supabase.from("users").upsert(
+    {
+      wallet_address: input.walletAddress,
+      role: input.role,
+      display_name: input.displayName?.trim() || null,
+      vehicle_model: input.vehicleModel?.trim() || null,
+      contact_method: input.contactMethod?.trim() || null,
+      email: input.email?.trim() || null,
+      auth_provider: "wallet",
+      onboarding_completed_at: new Date().toISOString(),
     },
     { onConflict: "wallet_address" },
   );
@@ -381,18 +486,57 @@ export async function linkWalletToAuthProfile(walletAddress: string): Promise<vo
 
   const provider = authProviderFromSupabaseUser(user);
   const verifiedAt = emailVerifiedAtIso(user);
+  const normalizedWallet = walletAddress.trim();
+  if (!normalizedWallet) throw new Error("Wallet address is required.");
 
-  const { error } = await supabase.from("users").upsert(
-    {
-      auth_user_id: user.id,
-      wallet_address: walletAddress,
+  // 1) Prefer strict update on the current auth row (RLS-friendly and deterministic).
+  const { data: updated, error: updateErr } = await supabase
+    .from("users")
+    .update({
+      wallet_address: normalizedWallet,
       email: user.email ?? null,
       auth_provider: provider,
       email_verified_at: verifiedAt,
-    },
-    { onConflict: "auth_user_id" },
-  );
-  if (error) throw error;
+    })
+    .eq("auth_user_id", user.id)
+    .select("id")
+    .maybeSingle();
+  if (updateErr) throw updateErr;
+
+  // 2) If no row yet (fresh auth account), create one.
+  if (!updated?.id) {
+    const { error: insertErr } = await supabase.from("users").insert({
+      auth_user_id: user.id,
+      wallet_address: normalizedWallet,
+      email: user.email ?? null,
+      role: roleFromMetadata(user),
+      display_name: optionalString(user.user_metadata?.display_name),
+      vehicle_model: optionalString(user.user_metadata?.vehicle_model),
+      contact_method: optionalString(user.user_metadata?.contact_method),
+      auth_provider: provider,
+      email_verified_at: verifiedAt,
+    });
+    if (insertErr) {
+      const msg = insertErr.message ?? "";
+      if (/wallet_address.*duplicate|unique/i.test(msg)) {
+        throw new Error(
+          "This wallet is already linked to another M2M account. Disconnect it there first or use that account.",
+        );
+      }
+      throw insertErr;
+    }
+  }
+
+  // Keep auth metadata aligned (best-effort, non-fatal).
+  const { error: authMetaErr } = await supabase.auth.updateUser({
+    data: { wallet_address: normalizedWallet },
+  });
+  if (authMetaErr) {
+    console.warn(
+      "[M2M] Wallet metadata sync skipped:",
+      authMetaErr.message ?? authMetaErr,
+    );
+  }
 }
 
 export async function fetchChargingSessions(): Promise<ChargingChargerRow[]> {
@@ -548,6 +692,122 @@ export async function sumDriverSpentSol(driverWallet: string): Promise<number> {
   );
 }
 
+export async function countLedgerSessionsForHost(
+  hostWallet: string,
+): Promise<number> {
+  const sessions = await fetchLedgerSessionsForHost(hostWallet);
+  return sessions.length;
+}
+
+export async function countLedgerSessionsForDriver(
+  driverWallet: string,
+): Promise<number> {
+  const sessions = await fetchLedgerSessionsForDriver(driverWallet);
+  return sessions.length;
+}
+
+export type DriverDashboardMetrics = {
+  totalSpentSol: number;
+  completedSessions: number;
+  recentSessions: ChargingSessionReceiptRow[];
+  lastSessionAt: string | null;
+};
+
+export async function fetchDriverDashboardMetrics(
+  driverWallet: string,
+): Promise<DriverDashboardMetrics> {
+  const [totalSpentSol, recentSessions] = await Promise.all([
+    sumDriverSpentSol(driverWallet),
+    fetchLedgerSessionsForDriver(driverWallet),
+  ]);
+  return {
+    totalSpentSol,
+    completedSessions: recentSessions.length,
+    recentSessions,
+    lastSessionAt: recentSessions[0]?.created_at ?? null,
+  };
+}
+
+export type HostDashboardMetrics = {
+  totalEarnedSol: number;
+  completedSessions: number;
+  activeListings: number;
+  ownedChargers: ChargerRow[];
+  recentSessions: ChargingSessionReceiptRow[];
+  lastSessionAt: string | null;
+};
+
+export async function fetchHostDashboardMetrics(
+  hostWallet: string,
+): Promise<HostDashboardMetrics> {
+  const [totalEarnedSol, recentSessions, ownedChargers] = await Promise.all([
+    sumHostEarningsSol(hostWallet),
+    fetchLedgerSessionsForHost(hostWallet),
+    fetchChargersOwnedByWallet(hostWallet),
+  ]);
+  return {
+    totalEarnedSol,
+    completedSessions: recentSessions.length,
+    activeListings: ownedChargers.filter((c) =>
+      ["active", "available", "charging"].includes(c.status),
+    ).length,
+    ownedChargers,
+    recentSessions,
+    lastSessionAt: recentSessions[0]?.created_at ?? null,
+  };
+}
+
+/** Map / session-start UI: host contact + listing fields (SECURITY DEFINER RPC). */
+export async function fetchChargerSessionPreview(
+  chargerId: string,
+): Promise<ChargerSessionPreviewRpc | null> {
+  if (!hasSupabasePublicConfig()) return null;
+  const supabase = getSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("get_charger_session_preview", {
+    p_charger_id: chargerId,
+  });
+  if (error) throw error;
+  if (!data || typeof data !== "object") return null;
+  return data as ChargerSessionPreviewRpc;
+}
+
+export async function insertChargingSessionIntent(input: {
+  chargerId: string;
+  driverWallet: string;
+  hostWallet: string;
+  stage: ChargingSessionIntentStage;
+}): Promise<{ id: string }> {
+  const supabase = getSupabaseBrowserClient();
+  const { data, error } = await supabase
+    .from("charging_session_intents")
+    .insert({
+      charger_id: input.chargerId,
+      driver_wallet: input.driverWallet,
+      host_wallet: input.hostWallet,
+      stage: input.stage,
+      updated_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return { id: data.id as string };
+}
+
+export async function updateChargingSessionIntentStage(
+  intentId: string,
+  stage: ChargingSessionIntentStage,
+): Promise<void> {
+  const supabase = getSupabaseBrowserClient();
+  const { error } = await supabase
+    .from("charging_session_intents")
+    .update({
+      stage,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", intentId);
+  if (error) throw error;
+}
+
 export async function updateAuthUserProfile(
   patch: Partial<
     Pick<
@@ -615,15 +875,25 @@ export async function insertChargerForAuthOwner(input: {
   title: string;
   plugType: ChargerType;
   pricePerKwh: number;
+  lat?: number;
+  lng?: number;
 }): Promise<void> {
   if (!Number.isFinite(input.pricePerKwh) || input.pricePerKwh <= 0) {
     throw new Error("Price per kWh must be greater than zero.");
   }
+  const lat =
+    Number.isFinite(input.lat) && input.lat !== undefined
+      ? input.lat
+      : PROFILE_CHARGER_DEFAULT_LAT;
+  const lng =
+    Number.isFinite(input.lng) && input.lng !== undefined
+      ? input.lng
+      : PROFILE_CHARGER_DEFAULT_LNG;
   const supabase = getSupabaseBrowserClient();
   const { error } = await supabase.from("chargers").insert({
     owner_id: input.ownerId,
-    lat: PROFILE_CHARGER_DEFAULT_LAT,
-    lng: PROFILE_CHARGER_DEFAULT_LNG,
+    lat,
+    lng,
     price_per_kwh: input.pricePerKwh,
     status: "active",
     title: input.title.trim(),
@@ -634,6 +904,42 @@ export async function insertChargerForAuthOwner(input: {
     charger_brand_slug: "other",
   });
   if (error) throw error;
+}
+
+export async function createInitialChargerForCurrentAuth(input: {
+  title: string;
+  plugType: ChargerType;
+  pricePerKwh: number;
+  lat?: number;
+  lng?: number;
+}): Promise<void> {
+  if (!Number.isFinite(input.pricePerKwh) || input.pricePerKwh <= 0) {
+    throw new Error("Price per kWh must be greater than zero.");
+  }
+  const supabase = getSupabaseBrowserClient();
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+  if (userErr) throw userErr;
+  if (!user) throw new Error("You must be signed in to create a charger.");
+
+  const { data: owner, error: ownerErr } = await supabase
+    .from("users")
+    .select("id")
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+  if (ownerErr) throw ownerErr;
+  if (!owner?.id) throw new Error("Profile not ready yet. Please try again.");
+
+  await insertChargerForAuthOwner({
+    ownerId: owner.id as string,
+    title: input.title,
+    plugType: input.plugType,
+    pricePerKwh: input.pricePerKwh,
+    lat: input.lat,
+    lng: input.lng,
+  });
 }
 
 export async function updateChargerListingFieldsForOwner(

@@ -62,6 +62,40 @@ export type ChargingSessionReceiptRow = {
   created_at: string;
 };
 
+/** Pre-ledger workflow row (Supabase migration_phase18). */
+export type ChargingSessionIntentStage =
+  | "opened"
+  | "qr_verified"
+  | "awaiting_escrow"
+  | "charging"
+  | "completed"
+  | "cancelled";
+
+export type ChargingSessionIntentRow = {
+  id: string;
+  charger_id: string;
+  driver_wallet: string;
+  host_wallet: string;
+  stage: ChargingSessionIntentStage;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Shape returned by RPC `get_charger_session_preview`. */
+export type ChargerSessionPreviewRpc = {
+  charger_id: string;
+  charger_title: string | null;
+  charger_label: string | null;
+  plug_type: string | null;
+  price_per_kwh: number;
+  description: string | null;
+  parking_instructions: string | null;
+  charger_status: ChargerStatus;
+  host_display_name: string | null;
+  host_contact_method: string | null;
+  host_wallet: string | null;
+};
+
 /** Row for /demo oracle table: one active charging listing. */
 export type ChargingChargerRow = {
   id: string;

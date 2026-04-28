@@ -19,6 +19,7 @@ export function Navbar() {
   const { connected } = useWallet();
   const { session } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileProfileOpenToken, setMobileProfileOpenToken] = useState(0);
 
   const links = useMemo(() => {
     const base: { href: string; label: string }[] = [
@@ -155,12 +156,29 @@ export function Navbar() {
               Account
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <ProfileMenu />
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false);
+                  setMobileProfileOpenToken((t) => t + 1);
+                }}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-surface-container-low/80 text-on-surface shadow-[0_0_20px_rgba(52,254,160,0.12)] transition hover:border-primary/40 hover:shadow-[0_0_24px_rgba(52,254,160,0.2)]"
+                aria-label="Open profile menu"
+              >
+                <span className="material-symbols-outlined text-xl text-primary">
+                  person
+                </span>
+              </button>
               <WalletConnectButton variant="nav" />
             </div>
           </div>
         </div>
       ) : null}
+      <ProfileMenu
+        mobileCentered
+        hideTrigger
+        openToken={mobileProfileOpenToken}
+      />
     </>
   );
 }

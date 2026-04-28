@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useSearchParams } from "next/navigation";
 import Map, {
   Layer,
   Marker,
@@ -19,6 +20,9 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { useAuth } from "@/components/auth/AuthProvider";
 import { SessionEscrowModal } from "@/components/SessionEscrowModal";
+
+import { ChargerSessionPreviewModal } from "./ChargerSessionPreviewModal";
+import { HostQrScanModal } from "./HostQrScanModal";
 import { accuracyCirclePolygon } from "@/lib/geo/accuracyCircle";
 import { nearestCharger } from "@/lib/geo/haversine";
 import {
@@ -95,6 +99,7 @@ function ringRadiusM(accuracy: number | null): number | null {
 }
 
 export function ChargerMap() {
+  const searchParams = useSearchParams();
   const { mapboxToken } = getPublicEnv();
   const mapboxOk = hasMapboxPublicToken();
   const hasSupabaseEnv = hasSupabasePublicConfig();
@@ -105,8 +110,13 @@ export function ChargerMap() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<ChargerRow | null>(null);
-  const [sessionOpen, setSessionOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
+  const [escrowOpen, setEscrowOpen] = useState(false);
+  const [sessionEntry, setSessionEntry] = useState<"map" | "qr_print">("map");
+  const [activeIntentId, setActiveIntentId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const qrAutoOpenHandledRef = useRef(false);
 
   /** After first driver GPS sync, avoid re-flying / re-selecting on every tick. */
   const driverGpsSyncedRef = useRef(false);
@@ -161,6 +171,25 @@ export function ChargerMap() {
       setSelected(fallback);
     }
   }, [chargers, selected]);
+
+  useEffect(() => {
+    const targetChargerId = searchParams.get("charger");
+    if (!targetChargerId || chargers.length === 0) return;
+    const hit = chargers.find((c) => c.id === targetChargerId);
+    if (!hit) return;
+    setSelected(hit);
+    if (!qrAutoOpenHandledRef.current) {
+      qrAutoOpenHandledRef.current = true;
+      const fromPrintedQr = searchParams.get("source") === "qr";
+      setSessionEntry(fromPrintedQr ? "qr_print" : "map");
+      setPreviewOpen(true);
+      if (fromPrintedQr) {
+        setToast(
+          "Opened from host QR — review pricing and host contact, then continue to escrow.",
+        );
+      }
+    }
+  }, [chargers, searchParams]);
 
   const displayCharger = useMemo(() => {
     if (selected) return selected;
@@ -454,7 +483,10 @@ export function ChargerMap() {
               </div>
               <button
                 type="button"
-                onClick={() => setSessionOpen(true)}
+                onClick={() => {
+                  setSessionEntry("map");
+                  setPreviewOpen(true);
+                }}
                 disabled={
                   displayCharger.status === "charging" ||
                   displayCharger.status === "inactive" ||
@@ -480,10 +512,42 @@ export function ChargerMap() {
         </div>
       </div>
 
-      <SessionEscrowModal
-        open={sessionOpen}
+      <ChargerSessionPreviewModal
+        open={previewOpen}
         charger={displayCharger}
-        onClose={() => setSessionOpen(false)}
+        sessionEntry={sessionEntry}
+        onClose={() => setPreviewOpen(false)}
+        onContinueToScan={(intentId) => {
+          setActiveIntentId(intentId);
+          setPreviewOpen(false);
+          setScanOpen(true);
+        }}
+        onContinueToEscrow={(intentId) => {
+          setActiveIntentId(intentId);
+          setPreviewOpen(false);
+          setEscrowOpen(true);
+        }}
+      />
+
+      <HostQrScanModal
+        open={scanOpen && Boolean(displayCharger)}
+        expectedChargerId={displayCharger?.id ?? ""}
+        intentId={activeIntentId}
+        onClose={() => setScanOpen(false)}
+        onVerified={() => {
+          setScanOpen(false);
+          setEscrowOpen(true);
+        }}
+      />
+
+      <SessionEscrowModal
+        open={escrowOpen}
+        charger={displayCharger}
+        sessionIntentId={activeIntentId}
+        onClose={() => {
+          setEscrowOpen(false);
+          setActiveIntentId(null);
+        }}
         onSessionConfirmed={() => {
           void loadChargers();
         }}

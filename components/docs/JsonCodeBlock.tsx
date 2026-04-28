@@ -1,8 +1,5 @@
 "use client";
 
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-
 type JsonCodeBlockProps = {
   methodPath: string;
   children: string;
@@ -19,21 +16,9 @@ export function JsonCodeBlock({ methodPath, children }: JsonCodeBlockProps) {
           JSON
         </span>
       </div>
-      <SyntaxHighlighter
-        language="json"
-        style={vscDarkPlus}
-        customStyle={{
-          margin: 0,
-          padding: "1.125rem 1.25rem",
-          background: "#0c0d10",
-          fontSize: "13px",
-          lineHeight: 1.65,
-        }}
-        codeTagProps={{ className: "font-mono" }}
-        PreTag="div"
-      >
-        {children.trim()}
-      </SyntaxHighlighter>
+      <pre className="m-0 overflow-x-auto bg-[#0c0d10] px-5 py-[1.125rem] font-mono text-[13px] leading-[1.65] text-on-surface">
+        <code>{children.trim()}</code>
+      </pre>
     </div>
   );
 }

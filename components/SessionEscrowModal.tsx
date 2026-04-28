@@ -1,14 +1,17 @@
 "use client";
 
-import { LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
+import { useEscrowSwapPayment } from "@/hooks/useEscrowSwapPayment";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { getEscrowPublicKey } from "@/lib/constants/escrow";
 import { hasSupabasePublicConfig } from "@/lib/env/public";
-import { updateChargerStatus } from "@/lib/supabase/client";
+import {
+  updateChargingSessionIntentStage,
+  updateChargerStatus,
+} from "@/lib/supabase/client";
 import type { ChargerRow } from "@/lib/types/database";
 
 type UiPhase =
@@ -21,6 +24,8 @@ type UiPhase =
 type SessionEscrowModalProps = {
   open: boolean;
   charger: ChargerRow | null;
+  /** When set, workflow stages sync to charging_session_intents (migration_phase18). */
+  sessionIntentId?: string | null;
   onClose: () => void;
   onSessionConfirmed?: () => void;
 };
@@ -28,11 +33,12 @@ type SessionEscrowModalProps = {
 export function SessionEscrowModal({
   open,
   charger,
+  sessionIntentId,
   onClose,
   onSessionConfirmed,
 }: SessionEscrowModalProps) {
-  const { connection } = useConnection();
-  const { connected, publicKey, sendTransaction } = useWallet();
+  const { connected, publicKey } = useWallet();
+  const { prepareAndSendEscrowSwap } = useEscrowSwapPayment();
 
   const [phase, setPhase] = useState<UiPhase>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -47,50 +53,36 @@ export function SessionEscrowModal({
     }
   }, [open]);
 
+  useEffect(() => {
+    if (
+      !open ||
+      !charger ||
+      !sessionIntentId?.trim() ||
+      !hasSupabasePublicConfig()
+    ) {
+      return;
+    }
+    void updateChargingSessionIntentStage(sessionIntentId, "awaiting_escrow").catch(
+      () => {},
+    );
+  }, [open, charger, sessionIntentId]);
+
   const handleStartSession = useCallback(async () => {
     if (!charger || !publicKey) return;
 
     setErrorMessage(null);
     setPhase("awaiting_approval");
 
-    const escrow = getEscrowPublicKey();
-    const lamports = Math.floor(0.01 * LAMPORTS_PER_SOL);
-
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: publicKey,
-        toPubkey: escrow,
-        lamports,
-      }),
-    );
-
     try {
-      const { blockhash, lastValidBlockHeight } =
-        await connection.getLatestBlockhash("confirmed");
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = publicKey;
-
-      const signature = await sendTransaction(transaction, connection, {
-        skipPreflight: false,
+      setPhase("confirming");
+      await prepareAndSendEscrowSwap({
+        // TODO: bind this to dynamic quote (rate * estimated kWh).
+        m2mAmountUi: 5,
+        slippageBps: 100,
       });
 
-      setPhase("confirming");
-
-      await connection.confirmTransaction(
-        {
-          signature,
-          blockhash,
-          lastValidBlockHeight,
-        },
-        "confirmed",
-      );
-
       if (hasSupabasePublicConfig()) {
-        await updateChargerStatus(
-          charger.id,
-          "charging",
-          publicKey.toBase58(),
-        );
+        await updateChargerStatus(charger.id, "charging", publicKey.toBase58());
       }
 
       setPhase("charging");
@@ -98,20 +90,15 @@ export function SessionEscrowModal({
     } catch (e) {
       const msg =
         e instanceof Error ? e.message : "Transaction failed. Try again.";
-      const friendly =
-        /user reject|denied|cancel/i.test(msg) ||
-        msg.includes("0x1") /* some wallets */
-          ? "Transaction was cancelled in the wallet."
-          : msg;
-      setErrorMessage(friendly);
+      setErrorMessage(msg);
       setPhase("error");
     }
   }, [
     charger,
-    connection,
     publicKey,
-    sendTransaction,
+    prepareAndSendEscrowSwap,
     onSessionConfirmed,
+    sessionIntentId,
   ]);
 
   if (!open || !charger) return null;
@@ -121,7 +108,7 @@ export function SessionEscrowModal({
       case "awaiting_approval":
         return "Awaiting Wallet Approval…";
       case "confirming":
-        return "Confirming on Devnet…";
+        return "Confirming Swap + Escrow…";
       case "charging":
         return "Charging in Progress";
       case "error":
@@ -140,26 +127,24 @@ export function SessionEscrowModal({
         aria-modal="true"
         aria-labelledby="session-modal-title"
       >
-        <div className="flex justify-between items-start gap-4">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h2
               id="session-modal-title"
-              className="font-headline font-bold text-xl text-on-surface"
+              className="font-headline text-xl font-bold text-on-surface"
             >
               Charging session
             </h2>
-            <p className="text-sm text-on-surface-variant mt-1">
+            <p className="mt-1 text-sm text-on-surface-variant">
               {charger.title ?? charger.label ?? "M2M host"}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-lg hover:bg-white/5 disabled:opacity-40"
+            className="rounded-lg p-1 text-on-surface-variant transition-colors hover:bg-white/5 hover:text-on-surface disabled:opacity-40"
             aria-label="Close"
-            disabled={
-              phase === "awaiting_approval" || phase === "confirming"
-            }
+            disabled={phase === "awaiting_approval" || phase === "confirming"}
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -167,9 +152,10 @@ export function SessionEscrowModal({
 
         {!connected ? (
           <div className="space-y-4">
-            <p className="text-on-surface-variant text-sm leading-relaxed">
-              Connect your Solana wallet on Devnet. You will approve a 0.01 SOL
-              transfer to the M2M escrow address to start this session.
+            <p className="text-sm leading-relaxed text-on-surface-variant">
+              Connect your Solana wallet. You will approve a Jupiter swap from
+              $M2M into USDC, then route that USDC into escrow to start this
+              session.
             </p>
             <div className="flex justify-center">
               <WalletConnectButton variant="primary" />
@@ -178,14 +164,13 @@ export function SessionEscrowModal({
         ) : (
           <div className="space-y-5">
             <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] leading-relaxed text-on-surface-variant">
-              <strong className="text-on-surface">Demo hold:</strong> this sends
-              SOL to a configured devnet address, not a custodial escrow program,
-              no USDC streaming, and no automated refunds. Production would use a
-              verified program + oracle.
+              <strong className="text-on-surface">Escrow flow:</strong> Jupiter
+              swaps your $M2M to USDC and sends output USDC to the escrow
+              destination token account.
             </div>
-            <p className="text-xs text-on-surface-variant text-center leading-relaxed">
-              Devnet address:{" "}
-              <code className="text-primary/90 break-all text-[11px]">
+            <p className="text-center text-xs leading-relaxed text-on-surface-variant">
+              Escrow destination:{" "}
+              <code className="break-all text-[11px] text-primary/90">
                 {getEscrowPublicKey().toBase58()}
               </code>
             </p>
@@ -193,21 +178,20 @@ export function SessionEscrowModal({
             {phase === "idle" || phase === "error" ? (
               <>
                 {phase === "error" && errorMessage ? (
-                  <p className="text-sm text-error text-center">{errorMessage}</p>
+                  <p className="text-center text-sm text-error">{errorMessage}</p>
                 ) : null}
                 <button
                   type="button"
                   onClick={() => void handleStartSession()}
                   disabled={!publicKey}
-                  className="w-full py-3 bg-primary text-on-primary-fixed font-bold rounded-xl hover:shadow-[0_0_15px_rgba(52,254,160,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-bold text-on-primary-fixed transition-all hover:shadow-[0_0_15px_rgba(52,254,160,0.4)] disabled:opacity-50"
                 >
-                  Start Session (0.01 SOL escrow)
-                  <span className="material-symbols-outlined text-lg">
-                    bolt
-                  </span>
+                  Pay with $M2M -&gt; Escrow USDC
+                  <span className="material-symbols-outlined text-lg">bolt</span>
                 </button>
-                <p className="text-[11px] text-center text-on-surface-variant">
-                  Real Devnet transfer. Phantom will ask you to approve.
+                <p className="text-center text-[11px] text-on-surface-variant">
+                  Wallet approval required. Swap may fail due to slippage or low
+                  liquidity.
                 </p>
               </>
             ) : null}
@@ -216,9 +200,9 @@ export function SessionEscrowModal({
               phase === "confirming" ||
               phase === "charging") && (
               <div className="space-y-4">
-                <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
                   <div
-                    className={`h-full rounded-full bg-primary transition-[width] duration-700 ease-out shadow-[0_0_12px_rgba(52,254,160,0.45)] ${
+                    className={`h-full rounded-full bg-primary shadow-[0_0_12px_rgba(52,254,160,0.45)] transition-[width] duration-700 ease-out ${
                       phase === "charging" ? "animate-pulse" : ""
                     }`}
                     style={{
@@ -239,9 +223,9 @@ export function SessionEscrowModal({
                   {statusLabel}
                 </p>
                 {phase === "charging" ? (
-                  <p className="text-xs text-center text-on-surface-variant">
-                    Funds locked on chain. Charger status updated to
-                    &quot;charging&quot; in Supabase.
+                  <p className="text-center text-xs text-on-surface-variant">
+                    Escrow payment confirmed. Session intent marked charging; charger
+                    status updated in Supabase. Energy reconciliation APIs plug in later.
                   </p>
                 ) : null}
               </div>

@@ -1,27 +1,29 @@
 "use client";
 
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
-import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { GridRoleModal } from "@/components/auth/GridRoleModal";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { HostChargerManager } from "@/components/profile/HostChargerManager";
-import { linkWalletToAuthProfile } from "@/lib/supabase/client";
+import {
+  linkWalletToAuthProfile,
+  resendSignupConfirmation,
+} from "@/lib/supabase/client";
 import { useM2MProfile } from "@/hooks/useM2MProfile";
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { connected, publicKey, disconnect } = useWallet();
-  const walletModal = useWalletModal();
   const { profile, loading, refetch } = useM2MProfile();
-  const [linkError, setLinkError] = useState<string | null>(null);
-  const [linking, setLinking] = useState(false);
+  const [resendingVerify, setResendingVerify] = useState(false);
+  const [verifyNotice, setVerifyNotice] = useState<string | null>(null);
+  const [walletSyncing, setWalletSyncing] = useState(false);
+  const [walletSyncError, setWalletSyncError] = useState<string | null>(null);
   const walletLinkAttemptKey = useRef<string | null>(null);
 
   useEffect(() => {
@@ -42,23 +44,25 @@ export default function ProfilePage() {
     const key = `${user.id}:${publicKey.toBase58()}`;
     if (walletLinkAttemptKey.current === key) return;
     walletLinkAttemptKey.current = key;
+    setWalletSyncError(null);
+    setWalletSyncing(true);
 
     let cancelled = false;
     void (async () => {
-      setLinking(true);
-      setLinkError(null);
       try {
         await linkWalletToAuthProfile(publicKey.toBase58());
-        if (!cancelled) await refetch();
+        if (!cancelled) {
+          await refetch();
+          setWalletSyncing(false);
+        }
       } catch (e) {
         walletLinkAttemptKey.current = null;
         if (!cancelled) {
-          setLinkError(
-            e instanceof Error ? e.message : "Could not link wallet.",
+          setWalletSyncing(false);
+          setWalletSyncError(
+            e instanceof Error ? e.message : "Could not link wallet to your profile.",
           );
         }
-      } finally {
-        if (!cancelled) setLinking(false);
       }
     })();
 
@@ -67,39 +71,15 @@ export default function ProfilePage() {
     };
   }, [connected, publicKey, user, profile, loading, refetch]);
 
-  const onLinkWallet = async () => {
-    if (!user) return;
-    setLinkError(null);
-    if (!connected || !publicKey) {
-      walletModal.setVisible(true);
-      return;
-    }
-    setLinking(true);
-    try {
-      await linkWalletToAuthProfile(publicKey.toBase58());
-      await refetch();
-    } catch (e) {
-      setLinkError(
-        e instanceof Error ? e.message : "Could not link wallet.",
-      );
-    } finally {
-      setLinking(false);
-    }
-  };
-
   const onLogoutAll = async () => {
     await signOut();
     if (connected) await disconnect();
   };
 
-  const walletShort = publicKey
-    ? `${publicKey.toBase58().slice(0, 6)}…${publicKey.toBase58().slice(-6)}`
-    : null;
-
   const showHost = profile?.role === "host" || profile?.role === "both";
   const emailDisplay = profile?.email ?? user?.email ?? null;
-  const needsWalletLink =
-    Boolean(user) && Boolean(profile) && !profile?.wallet_address;
+  const walletAddressDisplay = profile?.wallet_address ?? publicKey?.toBase58() ?? null;
+  const emailVerified = Boolean(profile?.email_verified_at);
 
   return (
     <>
@@ -131,47 +111,78 @@ export default function ProfilePage() {
                   <span className="rounded-full bg-white/10 px-3 py-1 font-headline text-xs font-bold uppercase tracking-wide text-on-surface">
                     Role: {profile?.role ?? "None"}
                   </span>
-                  {user?.email ? (
-                    <span className="rounded-full border border-white/15 px-3 py-1 text-xs text-on-surface-variant">
-                      Email account
-                    </span>
-                  ) : (
-                    <span className="rounded-full border border-primary/30 px-3 py-1 text-xs text-primary">
-                      Wallet identity
-                    </span>
-                  )}
                 </div>
-              </div>
-            </header>
-
-            <section
-              className="m2m-rise glass-card rounded-[2rem] border border-white/10 p-6 transition-all duration-500 ease-out hover:border-white/15 sm:p-8"
-              style={{ animationDelay: "80ms" }}
-            >
-              <h2 className="font-headline text-lg font-bold text-on-surface">
-                Account
-              </h2>
-              <dl className="mt-4 space-y-3 text-sm">
                 {emailDisplay ? (
-                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-                    <dt className="text-on-surface-variant">Email</dt>
-                    <dd className="break-all font-medium text-on-surface">
-                      {emailDisplay}
-                    </dd>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <p className="text-sm text-on-surface-variant">
+                      Email account:{" "}
+                      <span className="break-all text-on-surface">{emailDisplay}</span>
+                    </p>
+                    <button
+                      type="button"
+                      disabled={emailVerified || resendingVerify}
+                      onClick={() => {
+                        if (!emailDisplay || emailVerified) return;
+                        setVerifyNotice(null);
+                        setResendingVerify(true);
+                        void resendSignupConfirmation(emailDisplay)
+                          .then(() => {
+                            setVerifyNotice(
+                              "Confirmation email sent. Check inbox and spam.",
+                            );
+                          })
+                          .catch((e) => {
+                            setVerifyNotice(
+                              e instanceof Error
+                                ? e.message
+                                : "Could not resend confirmation.",
+                            );
+                          })
+                          .finally(() => setResendingVerify(false));
+                      }}
+                      className={`rounded-full px-3 py-1 text-xs font-bold ${
+                        emailVerified
+                          ? "bg-primary/20 text-primary"
+                          : "bg-white/10 text-on-surface-variant hover:bg-white/15"
+                      }`}
+                    >
+                      {emailVerified
+                        ? "Verified email"
+                        : resendingVerify
+                          ? "Resending..."
+                          : "Unverified email"}
+                    </button>
                   </div>
                 ) : (
-                  <p className="text-on-surface-variant">
-                    You are using a{" "}
-                    <strong className="text-on-surface">wallet only</strong>{" "}
-                    session. Add an email account anytime from{" "}
-                    <Link href="/auth/sign-in" className="font-bold text-primary">
-                      Sign in
-                    </Link>
-                    .
+                  <p className="mt-3 text-sm text-on-surface-variant">
+                    Wallet identity
                   </p>
                 )}
-              </dl>
-            </section>
+                <p className="mt-2 text-sm text-on-surface-variant">
+                  Wallet address:{" "}
+                  {walletAddressDisplay ? (
+                    <span className="break-all text-on-surface">
+                      {walletAddressDisplay}
+                    </span>
+                  ) : (
+                    <span className="text-on-surface-variant">Not connected</span>
+                  )}
+                </p>
+                {walletSyncing ? (
+                  <p className="mt-1 text-xs text-on-surface-variant">
+                    Syncing connected wallet to your profile...
+                  </p>
+                ) : null}
+                {walletSyncError ? (
+                  <p className="mt-1 text-xs text-error">{walletSyncError}</p>
+                ) : null}
+                {verifyNotice ? (
+                  <p className="mt-2 text-xs text-on-surface-variant">
+                    {verifyNotice}
+                  </p>
+                ) : null}
+              </div>
+            </header>
 
             {profile ? (
               <section
@@ -181,10 +192,6 @@ export default function ProfilePage() {
                 <h2 className="font-headline text-lg font-bold text-on-surface">
                   Profile details
                 </h2>
-                <p className="mt-1 text-sm text-on-surface-variant">
-                  One row per person: email accounts can link a wallet; wallet only
-                  users edit here when connected.
-                </p>
                 <ProfileEditForm
                   profile={profile}
                   onSaved={() => void refetch()}
@@ -199,133 +206,6 @@ export default function ProfilePage() {
                 profile={profile}
                 onCompleted={() => void refetch()}
               />
-            ) : null}
-
-            {needsWalletLink ? (
-              <div
-                className="m2m-rise rounded-[2rem] border border-secondary/30 bg-secondary/10 p-6 shadow-[0_0_40px_rgba(185,132,255,0.12)] transition-all duration-500 ease-out sm:p-8"
-                style={{ animationDelay: "100ms" }}
-              >
-                <p className="font-headline text-sm font-bold text-on-surface">
-                  Connect your wallet
-                </p>
-                <p className="mt-2 text-sm text-on-surface-variant">
-                  Link a Solana wallet to this account for payments and host
-                  payouts. We will attach it automatically when you connect.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <WalletConnectButton variant="primary" />
-                </div>
-              </div>
-            ) : null}
-
-            <section
-              className="m2m-rise glass-card rounded-[2rem] border border-white/10 p-6 transition-all duration-500 ease-out hover:border-white/15 sm:p-8"
-              style={{ animationDelay: "140ms" }}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h2 className="font-headline text-lg font-bold text-on-surface">
-                    Solana wallet
-                  </h2>
-                  <p className="mt-1 text-sm text-on-surface-variant">
-                    Required for escrow, sessions, and host payouts.
-                  </p>
-                </div>
-                <WalletConnectButton variant="primary" />
-              </div>
-
-              {connected && publicKey ? (
-                <div className="mt-6 rounded-xl border border-primary/25 bg-primary/5 p-4">
-                  <p className="font-mono text-xs leading-relaxed break-all text-primary">
-                    {publicKey.toBase58()}
-                  </p>
-                  {walletShort ? (
-                    <p className="mt-2 text-xs text-on-surface-variant">
-                      Short: {walletShort}
-                    </p>
-                  ) : null}
-                </div>
-              ) : (
-                <p className="mt-4 text-sm text-on-surface-variant">
-                  Connect a wallet to pay for charging sessions and receive
-                  earnings.
-                </p>
-              )}
-
-              {user ? (
-                <div className="mt-6 border-t border-white/10 pt-6">
-                  <p className="text-sm text-on-surface-variant">
-                    Link this browser wallet to your email profile so sessions
-                    and listings use one identity.
-                  </p>
-                  {linkError ? (
-                    <p className="mt-2 text-sm text-error">{linkError}</p>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => void onLinkWallet()}
-                    disabled={
-                      linking ||
-                      !connected ||
-                      Boolean(profile?.wallet_address)
-                    }
-                    className="mt-4 rounded-xl bg-secondary/20 px-4 py-3 font-headline text-sm font-bold text-secondary transition-all duration-300 hover:bg-secondary/30 disabled:opacity-40"
-                  >
-                    {linking
-                      ? "Linking…"
-                      : profile?.wallet_address
-                        ? "Wallet linked"
-                        : "Link connected wallet to profile"}
-                  </button>
-                  {profile?.wallet_address ? (
-                    <p className="mt-2 text-xs text-on-surface-variant">
-                      Stored wallet matches your profile for on chain actions.
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-            </section>
-
-            {profile &&
-            (profile.role === "driver" || profile.role === "both") ? (
-              <section
-                className="m2m-rise glass-card rounded-[2rem] border border-white/10 p-6 transition-all duration-500 ease-out hover:border-white/15 sm:p-8"
-                style={{ animationDelay: "200ms" }}
-              >
-                <h2 className="font-headline text-lg font-bold text-on-surface">
-                  Driver
-                </h2>
-                <dl className="mt-4 space-y-3 text-sm">
-                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-                    <dt className="text-on-surface-variant">Display name</dt>
-                    <dd className="text-on-surface">
-                      {profile.display_name ?? "None"}
-                    </dd>
-                  </div>
-                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-                    <dt className="text-on-surface-variant">Vehicle</dt>
-                    <dd className="text-right text-on-surface">
-                      {profile.vehicle_model ?? "None"}
-                    </dd>
-                  </div>
-                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-                    <dt className="text-on-surface-variant">Contact</dt>
-                    <dd className="text-right break-all text-on-surface">
-                      {profile.contact_method ?? "None"}
-                    </dd>
-                  </div>
-                </dl>
-                <Link
-                  href="/charge"
-                  className="mt-6 inline-flex items-center gap-2 font-headline text-sm font-bold text-primary hover:underline"
-                >
-                  Update driver profile
-                  <span className="material-symbols-outlined text-lg">
-                    arrow_forward
-                  </span>
-                </Link>
-              </section>
             ) : null}
 
             {profile && showHost ? (

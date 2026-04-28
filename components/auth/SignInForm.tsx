@@ -15,6 +15,7 @@ export function SignInForm({ nextHref }: SignInFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +28,18 @@ export function SignInForm({ nextHref }: SignInFormProps) {
       router.push(nextHref);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed.");
+      if (err instanceof Error) {
+        const msg = err.message.toLowerCase();
+        if (msg.includes("invalid login credentials")) {
+          setError("Invalid email or password.");
+        } else if (msg.includes("email not confirmed")) {
+          setError("Please verify your email first, then sign in.");
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError("Sign in failed. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -82,15 +94,27 @@ export function SignInForm({ nextHref }: SignInFormProps) {
                 Forgot password?
               </Link>
             </div>
-            <input
-              id="signin-password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none transition focus:ring-2 focus:ring-primary/40"
-            />
+            <div className="relative">
+              <input
+                id="signin-password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 pr-12 text-on-surface outline-none transition focus:ring-2 focus:ring-primary/40"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-on-surface-variant hover:text-on-surface"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {showPassword ? "visibility_off" : "visibility"}
+                </span>
+              </button>
+            </div>
           </div>
 
           {error ? (

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useState, type FormEvent } from "react";
 
@@ -36,12 +35,21 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   const isDriver = role === "driver" || role === "both";
   const isHost = role === "host" || role === "both";
 
+  const resetFormToProfile = () => {
+    setDisplayName(profile.display_name ?? "");
+    setVehicleModel(profile.vehicle_model ?? "");
+    setContactMethod(profile.contact_method ?? "");
+    setRole(profile.role);
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!editing) return;
     setError(null);
     setSaved(false);
     setSubmitting(true);
@@ -70,6 +78,7 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
         throw new Error("Sign in or connect a wallet to save.");
       }
       setSaved(true);
+      setEditing(false);
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save.");
@@ -83,9 +92,24 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
       onSubmit={(e) => void onSubmit(e)}
       className="space-y-5 border-t border-white/10 pt-6"
     >
-      <h3 className="font-headline text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-        Edit profile
-      </h3>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="font-headline text-sm font-bold uppercase tracking-wide text-on-surface-variant">
+          Profile information
+        </h3>
+        {!editing ? (
+          <button
+            type="button"
+            onClick={() => {
+              setSaved(false);
+              setError(null);
+              setEditing(true);
+            }}
+            className="rounded-xl border border-white/15 px-4 py-2 font-headline text-xs font-bold uppercase tracking-wide text-on-surface transition hover:bg-white/5"
+          >
+            Edit profile
+          </button>
+        ) : null}
+      </div>
 
       <div className="space-y-2">
         <label className="text-xs font-bold text-on-surface-variant" htmlFor="pe-role">
@@ -95,6 +119,7 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
           id="pe-role"
           value={role}
           onChange={(e) => setRole(e.target.value as UserRole)}
+          disabled={!editing}
           className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
         >
           {ROLES.map((r) => (
@@ -118,6 +143,7 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
           id="pe-name"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
+          disabled={!editing}
           placeholder={
             isHost && !isDriver
               ? "e.g. Alex — Brooklyn host"
@@ -148,6 +174,7 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
               id="pe-vehicle"
               value={vehicleModel}
               onChange={(e) => setVehicleModel(e.target.value)}
+              disabled={!editing}
               placeholder="e.g. Tesla Model 3"
               className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
             />
@@ -155,68 +182,30 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
               Helps hosts recognize your session and plan plug type.
             </p>
           </div>
+
+          <div className="space-y-2">
+            <label
+              className="text-xs font-bold text-on-surface-variant"
+              htmlFor="pe-contact"
+            >
+              Contact (phone / Telegram)
+            </label>
+            <input
+              id="pe-contact"
+              value={contactMethod}
+              onChange={(e) => setContactMethod(e.target.value)}
+              disabled={!editing}
+              placeholder="+1 … or @username"
+              className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
+            />
+            <p className="text-[11px] text-on-surface-variant">
+              {isHost && isDriver
+                ? "Shared for both driver and host coordination."
+                : "Optional — for session updates from hosts."}
+            </p>
+          </div>
         </div>
       ) : null}
-
-      {isHost ? (
-        <div className="space-y-3 rounded-xl border border-secondary/20 bg-secondary/[0.06] p-4">
-          <p className="font-headline text-[11px] font-bold uppercase tracking-[0.12em] text-secondary">
-            Host
-          </p>
-          <p className="text-sm leading-relaxed text-on-surface-variant">
-            When you add a charger, you set a{" "}
-            <strong className="font-semibold text-on-surface">
-              price per kilowatt-hour (USD / kWh)
-            </strong>
-            . That rate is stored on your listing and{" "}
-            <strong className="font-semibold text-on-surface">
-              shown on the map
-            </strong>{" "}
-            on your pin so drivers can compare spots before they start a session.
-            You can list multiple chargers with different rates if needed.
-          </p>
-          <p className="text-sm leading-relaxed text-on-surface-variant">
-            Manage listings, pricing, and Proof of Presence QR from the host tools.
-            Your display name and contact below help drivers coordinate at the plug.
-          </p>
-          <Link
-            href="/profile#charger-management"
-            className="inline-flex items-center gap-1.5 font-headline text-sm font-bold text-[#34fea0] transition hover:underline"
-          >
-            Register or edit chargers &amp; rates
-            <span className="material-symbols-outlined text-base">arrow_forward</span>
-          </Link>
-        </div>
-      ) : null}
-
-      <div className="space-y-2">
-        <label
-          className="text-xs font-bold text-on-surface-variant"
-          htmlFor="pe-contact"
-        >
-          {isHost && !isDriver
-            ? "Host contact (phone / Telegram)"
-            : "Contact (phone / Telegram)"}
-        </label>
-        <input
-          id="pe-contact"
-          value={contactMethod}
-          onChange={(e) => setContactMethod(e.target.value)}
-          placeholder={
-            isHost && !isDriver
-              ? "How drivers reach you for plug-in"
-              : "+1 … or @username"
-          }
-          className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
-        />
-        <p className="text-[11px] text-on-surface-variant">
-          {isHost && !isDriver
-            ? "Used for session coordination at your charger."
-            : isDriver && !isHost
-              ? "Optional — for session updates from hosts."
-              : "Shared for both driver and host flows."}
-        </p>
-      </div>
 
       {error ? (
         <p className="text-sm text-error">{error}</p>
@@ -225,13 +214,29 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
           Saved.
         </p>
       ) : null}
-      <button
-        type="submit"
-        disabled={submitting}
-        className="rounded-xl bg-primary px-6 py-3 font-headline text-sm font-bold text-on-primary-fixed transition hover:brightness-110 disabled:opacity-50"
-      >
-        {submitting ? "Saving…" : "Save changes"}
-      </button>
+      {editing ? (
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="rounded-xl bg-primary px-6 py-3 font-headline text-sm font-bold text-on-primary-fixed transition hover:brightness-110 disabled:opacity-50"
+          >
+            {submitting ? "Saving…" : "Save changes"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              resetFormToProfile();
+              setEditing(false);
+              setSaved(false);
+              setError(null);
+            }}
+            className="rounded-xl border border-white/15 px-6 py-3 font-headline text-sm font-bold text-on-surface-variant transition hover:bg-white/5 hover:text-on-surface"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : null}
     </form>
   );
 }

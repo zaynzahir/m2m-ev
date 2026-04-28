@@ -1,14 +1,35 @@
 "use client";
 
-import { useEffect } from "react";
+import { toDataURL } from "qrcode";
+import { useEffect, useMemo, useState } from "react";
 
 type AuthQrModalProps = {
   open: boolean;
+  chargerId: string;
   nodeTitle: string;
   onClose: () => void;
 };
 
-export function AuthQrModal({ open, nodeTitle, onClose }: AuthQrModalProps) {
+export function AuthQrModal({
+  open,
+  chargerId,
+  nodeTitle,
+  onClose,
+}: AuthQrModalProps) {
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+
+  const qrPayload = useMemo(() => {
+    if (!chargerId) return "";
+    if (typeof window === "undefined") {
+      return `/charge?charger=${encodeURIComponent(chargerId)}&source=qr`;
+    }
+    const url = new URL("/charge", window.location.origin);
+    url.searchParams.set("charger", chargerId);
+    url.searchParams.set("source", "qr");
+    return url.toString();
+  }, [chargerId]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -17,6 +38,30 @@ export function AuthQrModal({ open, nodeTitle, onClose }: AuthQrModalProps) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  useEffect(() => {
+    if (!open || !qrPayload) return;
+    let disposed = false;
+    void toDataURL(qrPayload, {
+      margin: 2,
+      width: 420,
+      color: {
+        dark: "#34fea0",
+        light: "#050506",
+      },
+    }).then((url) => {
+      if (!disposed) setQrDataUrl(url);
+    });
+    return () => {
+      disposed = true;
+    };
+  }, [open, qrPayload]);
+
+  useEffect(() => {
+    if (copyState !== "copied") return;
+    const t = window.setTimeout(() => setCopyState("idle"), 1400);
+    return () => window.clearTimeout(t);
+  }, [copyState]);
 
   if (!open) return null;
 
@@ -60,22 +105,44 @@ export function AuthQrModal({ open, nodeTitle, onClose }: AuthQrModalProps) {
             </button>
           </div>
 
-          <div className="flex aspect-square max-h-[220px] w-full max-w-[220px] mx-auto items-center justify-center rounded-xl border border-dashed border-primary/35 bg-black/60">
-            <div className="text-center px-4">
+          <div className="mx-auto flex aspect-square max-h-[220px] w-full max-w-[220px] items-center justify-center overflow-hidden rounded-xl border border-primary/25 bg-black/60">
+            {qrDataUrl ? (
+              <img
+                src={qrDataUrl}
+                alt={`Stable charger QR for ${nodeTitle}`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
               <span className="material-symbols-outlined text-5xl text-primary/50">
                 qr_code_2
               </span>
-              <p className="mt-3 text-xs leading-relaxed text-on-surface-variant">
-                QR payload will bind here for the active session. Driver scans with
-                the M2M app to authorize energization.
-              </p>
-            </div>
+            )}
           </div>
 
-          <p className="mt-6 text-center text-[11px] leading-relaxed text-on-surface-variant/90">
-            A session-bound, time-limited QR will appear here for the active node once
-            the session pipeline is armed.
+          <p className="mt-5 text-center text-[11px] leading-relaxed text-on-surface-variant/90">
+            Stable charger QR (v1). Print this or keep it on-screen. Driver scan opens this listing and starts the session flow.
           </p>
+          <p className="mt-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-center font-mono text-[10px] text-on-surface-variant">
+            {qrPayload}
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(qrPayload);
+                setCopyState("copied");
+              } catch {
+                setCopyState("error");
+              }
+            }}
+            className="mt-3 w-full rounded-xl border border-primary/30 bg-primary/10 py-2.5 font-headline text-xs font-bold text-primary transition-colors hover:bg-primary/15"
+          >
+            {copyState === "copied"
+              ? "Link copied"
+              : copyState === "error"
+                ? "Copy failed"
+                : "Copy QR link"}
+          </button>
 
           <button
             type="button"
