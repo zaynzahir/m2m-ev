@@ -287,6 +287,10 @@ export function WalletFirstTimeProfileModal() {
           <p className="mt-2 text-center text-sm text-on-surface-variant">
             First-time wallet onboarding. Create your account to link this wallet.
           </p>
+          <p className="mt-2 text-center text-[11px] leading-relaxed text-on-surface-variant">
+            Mobile wallet flow: approve once in Solflare/Phantom, then return here.
+            If the wallet app opens your browser again, wait a few seconds for sync.
+          </p>
 
           <div className="mt-6 space-y-4">
             <div className="space-y-2">

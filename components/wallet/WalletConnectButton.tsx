@@ -34,7 +34,7 @@ export function WalletConnectButton({ variant = "nav" }: WalletConnectButtonProp
       disabled={connecting}
     >
       {connecting ? (
-        "Connecting…"
+        "Waiting for wallet approval..."
       ) : (
         <>
           <span className="sm:hidden">Connect</span>

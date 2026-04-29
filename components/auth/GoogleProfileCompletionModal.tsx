@@ -250,7 +250,7 @@ export function GoogleProfileCompletionModal() {
                   {hasWallet
                     ? `Connected: ${shortWallet(walletDisplay ?? "")}`
                     : connecting
-                      ? "Connecting..."
+                      ? "Waiting for wallet approval..."
                       : "Connect wallet"}
                 </button>
                 {walletSyncing ? (
@@ -260,6 +260,12 @@ export function GoogleProfileCompletionModal() {
               {walletSyncError ? (
                 <p className="mt-2 text-xs text-error">{walletSyncError}</p>
               ) : null}
+              {hasWallet ? null : (
+                <p className="mt-2 text-[11px] leading-relaxed text-on-surface-variant">
+                  Mobile flow: tap <strong>Connect wallet</strong> once, approve in Solflare/Phantom,
+                  then return to this browser tab. It should connect automatically in a few seconds.
+                </p>
+              )}
             </div>
           </div>
 

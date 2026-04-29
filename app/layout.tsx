@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Manrope } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 
 import { Providers } from "./providers";
 import "./globals.css";
@@ -47,6 +48,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-dvh overflow-x-clip bg-background text-on-background font-body selection:bg-primary/30 antialiased">
         <Providers>{children}</Providers>
+        <Analytics />
       </body>
     </html>
   );
