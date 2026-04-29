@@ -71,6 +71,7 @@ export function WalletFirstTimeProfileModal() {
   const [locationBusy, setLocationBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [prefillNotice, setPrefillNotice] = useState<string | null>(null);
   const checkedWalletRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -118,6 +119,36 @@ export function WalletFirstTimeProfileModal() {
   }, [connected, publicKey, pathname, user]);
 
   const passwordError = useMemo(() => validateStrongPassword(password), [password]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("m2m_prefill") !== "google") return;
+
+    const roleParam = params.get("m2m_role");
+    const nameParam = params.get("m2m_name");
+    const contactParam = params.get("m2m_contact");
+    const vehicleParam = params.get("m2m_vehicle");
+    const emailParam = params.get("m2m_email");
+
+    if (roleParam === "driver" || roleParam === "host" || roleParam === "both") {
+      setRole(roleParam);
+    }
+    if (nameParam && !displayName) setDisplayName(nameParam);
+    if (contactParam && !contactMethod) setContactMethod(contactParam);
+    if (vehicleParam && !vehicleModel) setVehicleModel(vehicleParam);
+    if (emailParam && !email) setEmail(emailParam);
+    setPrefillNotice(
+      "Detected Google onboarding values. Fields were prefilled so you can continue from here.",
+    );
+  }, [
+    open,
+    displayName,
+    contactMethod,
+    vehicleModel,
+    email,
+  ]);
 
   if (!open || checking || !publicKey) return null;
 
@@ -449,6 +480,9 @@ export function WalletFirstTimeProfileModal() {
 
           {successMessage ? (
             <p className="mt-4 text-sm text-primary">{successMessage}</p>
+          ) : null}
+          {prefillNotice ? (
+            <p className="mt-4 text-xs text-on-surface-variant">{prefillNotice}</p>
           ) : null}
           {error ? (
             <p className="mt-4 text-sm text-error">{error}</p>

@@ -166,6 +166,22 @@ export function GoogleProfileCompletionModal() {
     }
   };
 
+  const launchWalletConnect = () => {
+    // Keep the current onboarding values in the URL so if a wallet app opens an in-app browser,
+    // the fallback wallet-first form can prefill instead of appearing empty.
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("m2m_prefill", "google");
+      url.searchParams.set("m2m_role", role);
+      if (displayName.trim()) url.searchParams.set("m2m_name", displayName.trim());
+      if (contactMethod.trim()) url.searchParams.set("m2m_contact", contactMethod.trim());
+      if (vehicleModel.trim()) url.searchParams.set("m2m_vehicle", vehicleModel.trim());
+      if (user.email) url.searchParams.set("m2m_email", user.email);
+      window.history.replaceState({}, "", url.toString());
+    }
+    setVisible(true);
+  };
+
   return (
     <div className="fixed inset-0 z-[220] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
       <div className="w-full max-w-lg rounded-[1.5rem] border border-white/10 bg-[#000000] shadow-[0_0_80px_rgba(52,254,160,0.08)]">
@@ -243,7 +259,7 @@ export function GoogleProfileCompletionModal() {
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setVisible(true)}
+                  onClick={launchWalletConnect}
                   disabled={connecting}
                   className="wallet-m2m-primary"
                 >
