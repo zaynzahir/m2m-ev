@@ -261,9 +261,8 @@ export function GoogleProfileCompletionModal() {
                 <p className="mt-2 text-xs text-error">{walletSyncError}</p>
               ) : null}
               {hasWallet ? null : (
-                <p className="mt-2 text-[11px] leading-relaxed text-on-surface-variant">
-                  Mobile flow: tap <strong>Connect wallet</strong> once, approve in Solflare/Phantom,
-                  then return to this browser tab. It should connect automatically in a few seconds.
+                <p className="mt-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-[11px] leading-relaxed text-on-surface-variant">
+                  Mobile tip: tap <strong>Connect wallet</strong>, approve in Solflare/Phantom, then return to this tab.
                 </p>
               )}
             </div>

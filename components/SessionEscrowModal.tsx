@@ -160,9 +160,8 @@ export function SessionEscrowModal({
             <div className="flex justify-center">
               <WalletConnectButton variant="primary" />
             </div>
-            <p className="text-center text-[11px] leading-relaxed text-on-surface-variant">
-              On mobile wallets (Solflare/Phantom), tap once, approve in the wallet app,
-              then return to this tab. Connection finalizes automatically.
+            <p className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-center text-[11px] leading-relaxed text-on-surface-variant">
+              Mobile tip: approve once in Solflare/Phantom, then return to this tab.
             </p>
           </div>
         ) : (
