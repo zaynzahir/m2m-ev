@@ -101,9 +101,10 @@ export default function DocsPage() {
                   Smart Contracts (Solana Escrow)
                 </h2>
                 <p className="mt-6 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
-                  The M2M protocol relies on trustless smart contracts to manage
-                  session funding, verification, and settlement. The core protocol is
-                  written in Rust using the Anchor framework.
+                  The M2M protocol roadmap uses trustless smart contracts for session
+                  funding, verification, and settlement. Current V1 demonstrates the
+                  session lifecycle and escrow rails, while full production settlement
+                  logic continues through phased hardening and audits.
                 </p>
 
                 <h3 className="mt-10 font-headline text-lg font-bold text-on-surface sm:text-xl">
@@ -187,11 +188,10 @@ export default function DocsPage() {
                   Hardware Oracle API (V2)
                 </h2>
                 <p className="mt-6 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
-                  The M2M Oracle is the trust boundary between the physical world and
-                  the Solana blockchain. It accepts cryptographically signed webhook
-                  payloads from charger backends, validates the QR &quot;Proof of
-                  Presence&quot;, and drives the escrow settlement only when vehicle
-                  telemetry and charger data agree.
+                  The M2M Oracle is the target trust boundary between the physical
+                  world and the Solana blockchain. V1 currently ships staged QR +
+                  escrow workflow primitives, while OEM telemetry reconciliation is
+                  being integrated as a phased rollout.
                 </p>
 
                 <h3 className="mt-10 font-headline text-lg font-bold text-on-surface sm:text-xl">
@@ -199,8 +199,9 @@ export default function DocsPage() {
                 </h3>
                 <p className="mt-4 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
                   When a driver scans the host&apos;s QR code, the client SDK requests
-                  session initialization. The Oracle verifies the escrow lock and
-                  authorizes the hardware to energize.
+                  session initialization and records workflow state. Hardware
+                  energization and direct charger-cloud authorization are part of the
+                  next integration phase.
                 </p>
                 <JsonCodeBlock methodPath="POST /api/v2/oracle/session-init">
                   {SESSION_INIT_JSON}
@@ -210,13 +211,14 @@ export default function DocsPage() {
                   2. Dual-verification settlement payload
                 </h3>
                 <p className="mt-4 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
-                  Upon session completion, the Oracle reconciles the data. Settlement
-                  is only authorized if the delta between hardware output and vehicle
-                  intake is within the accepted physical loss tolerance (typically{" "}
+                  In the target production architecture, settlement is authorized only
+                  when hardware output and vehicle intake remain within accepted
+                  physical loss tolerance (typically{" "}
                   <span className="font-headline font-semibold text-on-surface/90">
                     &lt; 2%
                   </span>
-                  ).
+                  ). V1 documents this schema and staged flow while live OEM/charger
+                  telemetry adapters continue rollout.
                 </p>
                 <JsonCodeBlock methodPath="POST /api/v2/oracle/session-settle">
                   {SETTLE_JSON}

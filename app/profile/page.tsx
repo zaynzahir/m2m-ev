@@ -222,7 +222,7 @@ export default function ProfilePage() {
                   <Link href="/auth/sign-in" className="font-bold text-primary">
                     Create an account
                   </Link>{" "}
-                  or connect a wallet and complete onboarding.
+                  to complete onboarding. Wallet connection is optional until you start a paid session.
                 </p>
               </div>
             ) : null}

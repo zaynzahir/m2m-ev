@@ -1,16 +1,11 @@
 "use client";
 
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useM2MProfile } from "@/hooks/useM2MProfile";
-import {
-  linkWalletToAuthProfile,
-  updateAuthUserProfile,
-} from "@/lib/supabase/client";
+import { updateAuthUserProfile } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/types/database";
 
 const ROLES: { value: UserRole; label: string }[] = [
@@ -19,17 +14,10 @@ const ROLES: { value: UserRole; label: string }[] = [
   { value: "both", label: "Both" },
 ];
 
-function shortWallet(address: string): string {
-  if (address.length <= 14) return address;
-  return `${address.slice(0, 6)}…${address.slice(-4)}`;
-}
-
 export function GoogleProfileCompletionModal() {
   const pathname = usePathname() ?? "";
   const { user } = useAuth();
   const { profile, loading, refetch } = useM2MProfile();
-  const { connected, connecting, publicKey } = useWallet();
-  const { setVisible } = useWalletModal();
 
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -38,9 +26,6 @@ export function GoogleProfileCompletionModal() {
   const [contactMethod, setContactMethod] = useState("");
   const [vehicleModel, setVehicleModel] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [walletSyncError, setWalletSyncError] = useState<string | null>(null);
-  const [walletSyncing, setWalletSyncing] = useState(false);
-  const syncedKeyRef = useRef<string | null>(null);
 
   const isGoogleUser = useMemo(() => {
     const provider = (profile?.auth_provider ?? user?.app_metadata?.provider ?? "")
@@ -64,8 +49,7 @@ export function GoogleProfileCompletionModal() {
       !profile.display_name?.trim() ||
       !profile.contact_method?.trim() ||
       !profile.onboarding_completed_at;
-    const needsWallet = !profile.wallet_address?.trim();
-    setOpen(needsProfile || needsWallet);
+    setOpen(needsProfile);
 
     if (!displayName && profile.display_name) setDisplayName(profile.display_name);
     if (!contactMethod && profile.contact_method) setContactMethod(profile.contact_method);
@@ -85,45 +69,7 @@ export function GoogleProfileCompletionModal() {
     role,
   ]);
 
-  useEffect(() => {
-    if (!open || !user || !profile || !connected || !publicKey) return;
-    if (profile.wallet_address?.trim()) return;
-
-    const walletAddress = publicKey.toBase58();
-    const key = `${user.id}:${walletAddress}`;
-    if (syncedKeyRef.current === key) return;
-    syncedKeyRef.current = key;
-    setWalletSyncError(null);
-    setWalletSyncing(true);
-
-    let cancelled = false;
-    void (async () => {
-      try {
-        await linkWalletToAuthProfile(walletAddress);
-        if (!cancelled) {
-          await refetch();
-          setWalletSyncing(false);
-        }
-      } catch (e) {
-        syncedKeyRef.current = null;
-        if (!cancelled) {
-          setWalletSyncing(false);
-          setWalletSyncError(
-            e instanceof Error ? e.message : "Could not link wallet.",
-          );
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [open, user, profile, connected, publicKey, refetch]);
-
   if (!open || !user || !profile) return null;
-
-  const hasWallet = Boolean(profile.wallet_address?.trim() || publicKey?.toBase58());
-  const walletDisplay = profile.wallet_address?.trim() || publicKey?.toBase58() || null;
 
   const onSave = async () => {
     setError(null);
@@ -139,10 +85,6 @@ export function GoogleProfileCompletionModal() {
       setError("Vehicle model is required for driver access.");
       return;
     }
-    if (!hasWallet) {
-      setError("Please connect your wallet before continuing.");
-      return;
-    }
 
     setSaving(true);
     try {
@@ -154,9 +96,6 @@ export function GoogleProfileCompletionModal() {
           role === "driver" || role === "both" ? vehicleModel.trim() : null,
         onboarding_completed_at: new Date().toISOString(),
       });
-      if (publicKey) {
-        await linkWalletToAuthProfile(publicKey.toBase58());
-      }
       await refetch();
       setOpen(false);
     } catch (e) {
@@ -164,22 +103,6 @@ export function GoogleProfileCompletionModal() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const launchWalletConnect = () => {
-    // Keep the current onboarding values in the URL so if a wallet app opens an in-app browser,
-    // the fallback wallet-first form can prefill instead of appearing empty.
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.set("m2m_prefill", "google");
-      url.searchParams.set("m2m_role", role);
-      if (displayName.trim()) url.searchParams.set("m2m_name", displayName.trim());
-      if (contactMethod.trim()) url.searchParams.set("m2m_contact", contactMethod.trim());
-      if (vehicleModel.trim()) url.searchParams.set("m2m_vehicle", vehicleModel.trim());
-      if (user.email) url.searchParams.set("m2m_email", user.email);
-      window.history.replaceState({}, "", url.toString());
-    }
-    setVisible(true);
   };
 
   return (
@@ -193,7 +116,7 @@ export function GoogleProfileCompletionModal() {
             Complete your profile
           </h2>
           <p className="mt-2 text-center text-sm text-on-surface-variant">
-            One-time setup: role, contact, and wallet connection for payments.
+            One-time setup: role and contact. Wallet can be connected later when needed for payments.
           </p>
 
           <div className="mt-6 space-y-4">
@@ -252,36 +175,6 @@ export function GoogleProfileCompletionModal() {
               />
             </div>
 
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-xs font-headline font-bold uppercase tracking-wide text-on-surface-variant">
-                Wallet connection
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={launchWalletConnect}
-                  disabled={connecting}
-                  className="wallet-m2m-primary"
-                >
-                  {hasWallet
-                    ? `Connected: ${shortWallet(walletDisplay ?? "")}`
-                    : connecting
-                      ? "Waiting for wallet approval..."
-                      : "Connect wallet"}
-                </button>
-                {walletSyncing ? (
-                  <span className="text-xs text-on-surface-variant">Syncing...</span>
-                ) : null}
-              </div>
-              {walletSyncError ? (
-                <p className="mt-2 text-xs text-error">{walletSyncError}</p>
-              ) : null}
-              {hasWallet ? null : (
-                <p className="mt-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-[11px] leading-relaxed text-on-surface-variant">
-                  Mobile tip: tap <strong>Connect wallet</strong>, approve in Solflare/Phantom, then return to this tab.
-                </p>
-              )}
-            </div>
           </div>
 
           {error ? <p className="mt-4 text-sm text-error">{error}</p> : null}
@@ -289,7 +182,7 @@ export function GoogleProfileCompletionModal() {
           <button
             type="button"
             onClick={() => void onSave()}
-            disabled={saving || !hasWallet}
+            disabled={saving}
             className="mt-6 w-full rounded-xl bg-[#34fea0] py-3.5 font-headline text-sm font-bold text-black shadow-[0_0_24px_rgba(52,254,160,0.25)] transition hover:brightness-110 disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save & Continue"}

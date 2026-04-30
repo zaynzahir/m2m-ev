@@ -93,12 +93,10 @@ export function HostQrScanModal({
             }
             verifiedRef.current = true;
             await stopScanner();
-            if (!intentId || !hasSupabasePublicConfig()) {
-              setFatal("Missing session intent — close and try again.");
-              return;
-            }
             try {
-              await updateChargingSessionIntentStage(intentId, "qr_verified");
+              if (intentId && hasSupabasePublicConfig()) {
+                await updateChargingSessionIntentStage(intentId, "qr_verified");
+              }
               setHint(null);
               onVerifiedRef.current();
             } catch (e: unknown) {

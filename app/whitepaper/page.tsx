@@ -140,8 +140,8 @@ export default function WhitepaperPage() {
                     infrastructure. By transforming idle residential and commercial
                     charging stations into permissionless, monetizable nodes, M2M
                     unlocks a global, peer-to-peer energy grid. We facilitate
-                    trustless, instant charging sessions settled purely in USDC via
-                    on-chain escrow. We are seeking a{" "}
+                    trust-minimized charging sessions routed through on-chain escrow
+                    rails. We are seeking a{" "}
                     <Money>$100,000 USD</Money> ecosystem grant to transition our V1
                     architecture from devnet to mainnet, finalize our legal entity
                     structuring, execute rigorous smart contract audits, and scale our
@@ -170,8 +170,9 @@ export default function WhitepaperPage() {
                     Machine-scale energy transfer requires an economic environment that
                     legacy payment rails cannot support. Traditional gateways charge
                     flat base fees that make micro-charging economically unviable for
-                    hosts. Solana is the only network capable of handling our required
-                    throughput with sub-second finality and transaction fees well below{" "}
+                    hosts. Solana is one of the few networks capable of handling our
+                    required throughput with sub-second finality and transaction fees
+                    well below{" "}
                     <Money>$0.01</Money>. By utilizing Solana, M2M replaces opaque
                     payment processors with trustless escrow and instant, cross-border
                     USDC settlement—ensuring hosts keep exactly what they earn.
@@ -188,6 +189,11 @@ export default function WhitepaperPage() {
                     The integrity of the M2M protocol relies on absolute data accuracy
                     without human intervention. Our architecture utilizes a unique
                     Dual-Verification Oracle paired with physical Proof of Presence:
+                  </p>
+                  <p className="!mt-5 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
+                    Current V1 demonstrates staged QR-authenticated session flow and
+                    escrow lifecycle foundations. Full live OEM + charger telemetry
+                    reconciliation is being integrated as the next protocol phase.
                   </p>
                   <div className="not-prose my-10 space-y-5">
                     {architecturePillars.map((pillar) => (

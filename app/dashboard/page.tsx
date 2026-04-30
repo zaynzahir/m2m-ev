@@ -376,7 +376,7 @@ export default function DashboardPage() {
             <GradientPanel>
               <div className="space-y-6 px-8 py-12 text-center md:px-12">
                 <p className="text-sm leading-relaxed text-on-surface-variant">
-                  Connect your Solana wallet to access node metrics, charger controls, and settlement history.
+                  You can explore account data without wallet connection. Connect a Solana wallet when you are ready to start paid charging sessions and escrow-based settlements.
                 </p>
                 <div className="flex justify-center">
                   <WalletConnectButton variant="primary" />

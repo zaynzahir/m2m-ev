@@ -43,13 +43,13 @@ const PROTOCOL_STEPS = [
   {
     title: "Dual Verification Oracle & Energy Delivery",
     paragraphs: [
-      "As electrons flow, the M2M protocol monitors the session in real-time. We utilize a dual-verification oracle model that continuously reconciles the energy output reported by the host's charging hardware with the energy intake reported by the driver's vehicle telematics. This guarantees that both sides remain honest, preventing hardware tampering and ensuring the driver only pays for exactly what their car receives.",
+      "As electrons flow, M2M tracks staged session state and prepares for full telemetry reconciliation. Our target dual-verification oracle model compares host-side charging output with driver-side vehicle intake to reduce tampering risk and align settlement with delivered energy.",
     ],
   },
   {
     title: "Sub-Second Settlement & The DePIN Loop",
     paragraphs: [
-      "Once the vehicle is fully charged or the driver ends the session, the oracle finalizes the exact energy usage. Built on Solana, the escrow smart contract instantly settles the payment with sub-second finality and near-zero fees. The host receives their earnings immediately directly to their wallet. Home chargers become revenue-generating assets, drivers get reliable access to a decentralized grid, and the M2M network grows stronger with every plug-in.",
+      "When a session ends, escrow and settlement rails finalize the payment lifecycle. On Solana, the production target is fast settlement with low transaction cost while preserving transparent host earnings and driver protection. This is the economic loop that scales home chargers into monetizable network infrastructure.",
     ],
   },
 ] as const;

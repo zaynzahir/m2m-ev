@@ -24,6 +24,7 @@ type UiPhase =
 type SessionEscrowModalProps = {
   open: boolean;
   charger: ChargerRow | null;
+  hostHasPayoutWallet?: boolean;
   /** When set, workflow stages sync to charging_session_intents (migration_phase18). */
   sessionIntentId?: string | null;
   onClose: () => void;
@@ -33,6 +34,7 @@ type SessionEscrowModalProps = {
 export function SessionEscrowModal({
   open,
   charger,
+  hostHasPayoutWallet = true,
   sessionIntentId,
   onClose,
   onSessionConfirmed,
@@ -152,10 +154,16 @@ export function SessionEscrowModal({
 
         {!connected ? (
           <div className="space-y-4">
+            <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-center">
+              <p className="font-headline text-sm font-bold text-primary">
+                Connect wallet to continue payment
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+                Signup/login does not require a wallet. Wallet is required only now, when payment escrow starts.
+              </p>
+            </div>
             <p className="text-sm leading-relaxed text-on-surface-variant">
-              Connect your Solana wallet. You will approve a Jupiter swap from
-              $M2M into USDC, then route that USDC into escrow to start this
-              session.
+              You will approve a Jupiter swap from $M2M into USDC, then route that USDC into escrow to start this session.
             </p>
             <div className="flex justify-center">
               <WalletConnectButton variant="primary" />
@@ -180,13 +188,18 @@ export function SessionEscrowModal({
 
             {phase === "idle" || phase === "error" ? (
               <>
+                {!hostHasPayoutWallet ? (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-3 py-2 text-center text-xs leading-relaxed text-amber-100/90">
+                    Host payout wallet is missing. Ask the listing owner to connect their wallet in Profile before payment can start.
+                  </div>
+                ) : null}
                 {phase === "error" && errorMessage ? (
                   <p className="text-center text-sm text-error">{errorMessage}</p>
                 ) : null}
                 <button
                   type="button"
                   onClick={() => void handleStartSession()}
-                  disabled={!publicKey}
+                  disabled={!publicKey || !hostHasPayoutWallet}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-bold text-on-primary-fixed transition-all hover:shadow-[0_0_15px_rgba(52,254,160,0.4)] disabled:opacity-50"
                 >
                   Pay with $M2M -&gt; Escrow USDC

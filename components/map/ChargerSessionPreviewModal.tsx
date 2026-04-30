@@ -21,9 +21,9 @@ type ChargerSessionPreviewModalProps = {
   sessionEntry: SessionEntryMode;
   onClose: () => void;
   /** Map flow: intent created as `opened`, driver must scan host QR next. */
-  onContinueToScan: (intentId: string) => void;
+  onContinueToScan: (intentId: string | null, hostHasPayoutWallet: boolean) => void;
   /** Printed / deep-link QR flow: intent created as `qr_verified`, skip scan. */
-  onContinueToEscrow: (intentId: string) => void;
+  onContinueToEscrow: (intentId: string | null, hostHasPayoutWallet: boolean) => void;
 };
 
 export function ChargerSessionPreviewModal({
@@ -82,35 +82,37 @@ export function ChargerSessionPreviewModal({
   }, [open, charger]);
 
   const handleContinue = useCallback(async () => {
-    if (!charger || !preview || !publicKey) return;
-    const driverWallet = publicKey.toBase58();
-    const hostWallet = preview.host_wallet?.trim();
-    if (!hostWallet) {
-      setError(
-        "The listing owner has no Solana payout address on file yet. That is not your wallet — the host must connect a wallet in Profile (same account that owns this charger) before drivers can start a session.",
-      );
-      return;
-    }
+    if (!charger || !preview) return;
+    const driverWallet = publicKey?.toBase58() ?? null;
+    const hostWallet = preview.host_wallet?.trim() ?? null;
+    const hostHasPayoutWallet = Boolean(hostWallet);
 
     setSubmitting(true);
     setError(null);
     try {
+      let intentId: string | null = null;
       if (sessionEntry === "qr_print") {
-        const { id } = await insertChargingSessionIntent({
-          chargerId: charger.id,
-          driverWallet,
-          hostWallet,
-          stage: "qr_verified",
-        });
-        onContinueToEscrow(id);
+        if (driverWallet && hostWallet) {
+          const { id } = await insertChargingSessionIntent({
+            chargerId: charger.id,
+            driverWallet,
+            hostWallet,
+            stage: "qr_verified",
+          });
+          intentId = id;
+        }
+        onContinueToEscrow(intentId, hostHasPayoutWallet);
       } else {
-        const { id } = await insertChargingSessionIntent({
-          chargerId: charger.id,
-          driverWallet,
-          hostWallet,
-          stage: "opened",
-        });
-        onContinueToScan(id);
+        if (driverWallet && hostWallet) {
+          const { id } = await insertChargingSessionIntent({
+            chargerId: charger.id,
+            driverWallet,
+            hostWallet,
+            stage: "opened",
+          });
+          intentId = id;
+        }
+        onContinueToScan(intentId, hostHasPayoutWallet);
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Could not start session.");
@@ -253,12 +255,29 @@ export function ChargerSessionPreviewModal({
 
           {!connected ? (
             <div className="space-y-3">
-              <p className="text-center text-sm text-on-surface-variant">
-                Link your Solana wallet to continue. Session intents bind to your wallet address.
-              </p>
+              <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-center">
+                <p className="font-headline text-sm font-bold text-primary">
+                  Connect wallet to continue payment
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+                  Account signup stays separate. Wallet is only required when you start paid charging sessions.
+                </p>
+              </div>
               <div className="flex justify-center">
                 <WalletConnectButton variant="primary" />
               </div>
+              <button
+                type="button"
+                disabled={busy || loading || submitting || !preview}
+                onClick={() => void handleContinue()}
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] py-3 font-headline font-bold text-on-surface transition-all hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {submitting
+                  ? "Working…"
+                  : sessionEntry === "qr_print"
+                    ? "Continue to payment step"
+                    : "Continue — scan host QR"}
+              </button>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
@@ -275,8 +294,7 @@ export function ChargerSessionPreviewModal({
                   busy ||
                   loading ||
                   submitting ||
-                  !preview ||
-                  !hostHasPayoutWallet
+                  !preview
                 }
                 onClick={() => void handleContinue()}
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-headline font-bold text-on-primary-fixed transition-all hover:shadow-[0_0_18px_rgba(52,254,160,0.35)] disabled:cursor-not-allowed disabled:opacity-40"

@@ -115,6 +115,7 @@ export function ChargerMap() {
   const [escrowOpen, setEscrowOpen] = useState(false);
   const [sessionEntry, setSessionEntry] = useState<"map" | "qr_print">("map");
   const [activeIntentId, setActiveIntentId] = useState<string | null>(null);
+  const [activeHostHasPayoutWallet, setActiveHostHasPayoutWallet] = useState<boolean>(true);
   const [toast, setToast] = useState<string | null>(null);
   const qrAutoOpenHandledRef = useRef(false);
 
@@ -517,13 +518,15 @@ export function ChargerMap() {
         charger={displayCharger}
         sessionEntry={sessionEntry}
         onClose={() => setPreviewOpen(false)}
-        onContinueToScan={(intentId) => {
+        onContinueToScan={(intentId, hostHasPayoutWallet) => {
           setActiveIntentId(intentId);
+          setActiveHostHasPayoutWallet(hostHasPayoutWallet);
           setPreviewOpen(false);
           setScanOpen(true);
         }}
-        onContinueToEscrow={(intentId) => {
+        onContinueToEscrow={(intentId, hostHasPayoutWallet) => {
           setActiveIntentId(intentId);
+          setActiveHostHasPayoutWallet(hostHasPayoutWallet);
           setPreviewOpen(false);
           setEscrowOpen(true);
         }}
@@ -543,10 +546,12 @@ export function ChargerMap() {
       <SessionEscrowModal
         open={escrowOpen}
         charger={displayCharger}
+        hostHasPayoutWallet={activeHostHasPayoutWallet}
         sessionIntentId={activeIntentId}
         onClose={() => {
           setEscrowOpen(false);
           setActiveIntentId(null);
+          setActiveHostHasPayoutWallet(true);
         }}
         onSessionConfirmed={() => {
           void loadChargers();
