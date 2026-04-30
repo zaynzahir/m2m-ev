@@ -238,6 +238,21 @@ export function HostChargerManager({ ownerId }: HostChargerManagerProps) {
             Host tools also support Proof of Presence QR session flow so drivers
             can coordinate directly at the plug.
           </p>
+          {chargers.length > 0 ? (
+            <button
+              type="button"
+              onClick={() =>
+                setQrModal({
+                  id: chargers[0].id,
+                  title: chargers[0].title ?? chargers[0].label ?? "Charger",
+                })
+              }
+              className="mt-3 inline-flex items-center gap-2 rounded-xl border border-primary/35 bg-primary/10 px-3 py-2 text-xs font-headline font-bold text-primary transition hover:bg-primary/15"
+            >
+              <span className="material-symbols-outlined text-base">qr_code_2</span>
+              Quick access: Show my host QR
+            </button>
+          ) : null}
         </div>
         <button
           type="button"

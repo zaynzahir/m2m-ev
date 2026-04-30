@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import { AuthQrModal } from "@/components/dashboard/AuthQrModal";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { hasSupabasePublicConfig } from "@/lib/env/public";
 import {
@@ -223,6 +224,7 @@ function SessionTable({
 }
 
 export default function DashboardPage() {
+  const { session } = useAuth();
   const { connected, publicKey } = useWallet();
   const address = publicKey?.toBase58() ?? null;
 
@@ -249,7 +251,7 @@ export default function DashboardPage() {
   const closeQrModal = useCallback(() => setQrModal(null), []);
 
   const load = useCallback(async () => {
-    if (!address) {
+    if (!session?.user && !address) {
       setLoading(false);
       return;
     }
@@ -263,13 +265,28 @@ export default function DashboardPage() {
     setError(null);
     try {
       const identity = await fetchDashboardIdentity(address);
+      const effectiveWallet = identity.walletAddress ?? address;
       setRole(identity.resolvedRole);
-      setWalletDisplay(identity.walletAddress ?? address);
+      setWalletDisplay(effectiveWallet);
       setEmailVerified(identity.emailVerified);
       setHasProfile(Boolean(identity.profile));
 
+      if (!effectiveWallet) {
+        setHostChargers([]);
+        setHostSessions([]);
+        setDriverSessions([]);
+        setTotalHost(0);
+        setTotalDriver(0);
+        setHostSessionCount(0);
+        setDriverSessionCount(0);
+        setHostLastSessionAt(null);
+        setDriverLastSessionAt(null);
+        setActiveListingsCount(0);
+        return;
+      }
+
       if (identity.resolvedRole === "host") {
-        const host = await fetchHostDashboardMetrics(identity.walletAddress ?? address);
+        const host = await fetchHostDashboardMetrics(effectiveWallet);
         setHostChargers(host.ownedChargers);
         setHostSessions(host.recentSessions);
         setTotalHost(host.totalEarnedSol);
@@ -286,8 +303,8 @@ export default function DashboardPage() {
 
       if (identity.resolvedRole === "both") {
         const [host, driver] = await Promise.all([
-          fetchHostDashboardMetrics(identity.walletAddress ?? address),
-          fetchDriverDashboardMetrics(identity.walletAddress ?? address),
+          fetchHostDashboardMetrics(effectiveWallet),
+          fetchDriverDashboardMetrics(effectiveWallet),
         ]);
 
         setHostChargers(host.ownedChargers);
@@ -304,7 +321,7 @@ export default function DashboardPage() {
         return;
       }
 
-      const driver = await fetchDriverDashboardMetrics(identity.walletAddress ?? address);
+      const driver = await fetchDriverDashboardMetrics(effectiveWallet);
       setDriverSessions(driver.recentSessions);
       setTotalDriver(driver.totalSpentSol);
       setDriverSessionCount(driver.completedSessions);
@@ -321,10 +338,10 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [address]);
+  }, [address, session?.user]);
 
   useEffect(() => {
-    if (connected && address) {
+    if (session?.user || address) {
       void load();
     } else {
       setLoading(false);
@@ -344,7 +361,7 @@ export default function DashboardPage() {
       setDriverLastSessionAt(null);
       setActiveListingsCount(0);
     }
-  }, [connected, address, load]);
+  }, [session?.user, address, load]);
 
   const showDriver = role === "driver" || role === "both";
   const showHost = role === "host" || role === "both";
@@ -372,18 +389,7 @@ export default function DashboardPage() {
             </p>
           </header>
 
-          {!connected ? (
-            <GradientPanel>
-              <div className="space-y-6 px-8 py-12 text-center md:px-12">
-                <p className="text-sm leading-relaxed text-on-surface-variant">
-                  You can explore account data without wallet connection. Connect a Solana wallet when you are ready to start paid charging sessions and escrow-based settlements.
-                </p>
-                <div className="flex justify-center">
-                  <WalletConnectButton variant="primary" />
-                </div>
-              </div>
-            </GradientPanel>
-          ) : loading ? (
+          {loading ? (
             <p className="text-sm text-on-surface-variant">Loading dashboard data…</p>
           ) : error ? (
             <GradientPanel>
@@ -391,6 +397,18 @@ export default function DashboardPage() {
             </GradientPanel>
           ) : (
             <div className="space-y-12 md:space-y-14">
+              {!connected ? (
+                <GradientPanel>
+                  <div className="space-y-4 px-6 py-6 md:px-8">
+                    <p className="text-sm leading-relaxed text-on-surface-variant">
+                      Dashboard is available without wallet connection. Connect wallet when you want to start paid sessions and on-chain settlement.
+                    </p>
+                    <div className="flex justify-start">
+                      <WalletConnectButton variant="primary" />
+                    </div>
+                  </div>
+                </GradientPanel>
+              ) : null}
               <GradientPanel>
                 <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-6 md:px-8">
                   <div>

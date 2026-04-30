@@ -37,6 +37,7 @@ export function HostQrScanModal({
 
   const [hint, setHint] = useState<string | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
+  const [lastDecoded, setLastDecoded] = useState<string | null>(null);
 
   const stopScanner = useCallback(async () => {
     if (stoppingRef.current) return;
@@ -56,6 +57,7 @@ export function HostQrScanModal({
       void stopScanner();
       setHint(null);
       setFatal(null);
+      setLastDecoded(null);
       verifiedRef.current = false;
       return;
     }
@@ -70,21 +72,26 @@ export function HostQrScanModal({
         const mod = await import("html5-qrcode");
         if (disposed) return;
         const Html5Qrcode = mod.Html5Qrcode;
+        const Html5QrcodeSupportedFormats = mod.Html5QrcodeSupportedFormats;
         const qr = new Html5Qrcode(readerDomId, false);
         html5Ref.current = qr;
 
-        await qr.start(
-          { facingMode: "environment" },
-          {
-            fps: 12,
-            qrbox: (viewW, viewH) => {
-              const m = Math.min(viewW, viewH);
-              const side = Math.min(280, Math.max(180, Math.floor(m * 0.72)));
-              return { width: side, height: side };
-            },
+        const config = {
+          fps: 12,
+          aspectRatio: 1,
+          rememberLastUsedCamera: true,
+          disableFlip: false,
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          qrbox: (viewW: number, viewH: number) => {
+            const m = Math.min(viewW, viewH);
+            const side = Math.min(300, Math.max(190, Math.floor(m * 0.74)));
+            return { width: side, height: side };
           },
-          async (decodedText) => {
+        };
+
+        const onScanSuccess = async (decodedText: string) => {
             if (verifiedRef.current) return;
+            setLastDecoded(decodedText);
             const extracted = extractChargerIdFromQrPayload(decodedText);
             const expectLower = expectedChargerId.toLowerCase();
             if (!extracted || extracted !== expectLower) {
@@ -92,6 +99,7 @@ export function HostQrScanModal({
               return;
             }
             verifiedRef.current = true;
+            setHint("QR verified. Opening payment step…");
             await stopScanner();
             try {
               if (intentId && hasSupabasePublicConfig()) {
@@ -103,9 +111,27 @@ export function HostQrScanModal({
               verifiedRef.current = false;
               setFatal(e instanceof Error ? e.message : "Could not verify session.");
             }
-          },
-          () => {},
-        );
+          };
+
+        try {
+          await qr.start(
+            { facingMode: { ideal: "environment" } },
+            config,
+            onScanSuccess,
+            () => {},
+          );
+        } catch {
+          const cameras = await Html5Qrcode.getCameras();
+          const backCam = cameras.find((c: { label: string }) =>
+            /back|rear|environment/i.test(c.label),
+          );
+          await qr.start(
+            backCam?.id ?? cameras[0]?.id,
+            config,
+            onScanSuccess,
+            () => {},
+          );
+        }
 
         setHint(null);
       } catch (e: unknown) {
@@ -128,8 +154,8 @@ export function HostQrScanModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md sm:p-6">
-      <div className="max-h-[min(92dvh,calc(100vh-2rem))] w-full max-w-lg overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#050506] shadow-[0_0_80px_rgba(52,254,160,0.12)]">
+    <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/80 p-0 backdrop-blur-md sm:items-center sm:p-6">
+      <div className="max-h-[100dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-2xl border border-white/10 bg-[#050506] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-5 shadow-[0_0_80px_rgba(52,254,160,0.12)] sm:max-h-[min(92dvh,calc(100vh-2rem))] sm:rounded-2xl sm:px-0 sm:pb-0 sm:pt-0">
         <div ref={panelRef} className="flex flex-col gap-4 p-6 sm:p-8">
           <header className="flex items-start justify-between gap-4">
             <div>
@@ -158,12 +184,17 @@ export function HostQrScanModal({
 
           <div
             id={readerDomId}
-            className="relative mx-auto aspect-square w-full max-w-[280px] overflow-hidden rounded-xl border border-primary/25 bg-black"
+            className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-xl border border-primary/25 bg-black"
           />
 
           {hint ? (
             <p className="text-center text-xs leading-relaxed text-amber-200/95" role="status">
               {hint}
+            </p>
+          ) : null}
+          {lastDecoded && !fatal ? (
+            <p className="text-center text-[11px] leading-relaxed text-on-surface-variant">
+              Scanner detected QR. Verifying charger match…
             </p>
           ) : null}
           {fatal ? (

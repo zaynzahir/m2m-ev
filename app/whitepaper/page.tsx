@@ -34,15 +34,15 @@ function Money({
 const architecturePillars = [
   {
     title: "Proof of Presence",
-    body: "Sessions are initiated via a physical QR-code handshake at the hardware location, preventing GPS spoofing and ensuring the driver is physically at the node.",
+    body: "Sessions are initiated via a physical QR-code handshake at the location, preventing GPS spoofing and ensuring the driver is physically at the node.",
   },
   {
     title: "Dual-Verification Oracle",
-    body: "Once a session begins, the protocol does not rely on a single source of truth. Our oracle reconciles energy output telemetry reported directly from the host's charging hardware (via OCPP standards) with the energy intake telemetry reported by the driver's vehicle API.",
+    body: "Once a session begins, the protocol does not rely on a single source of truth. Our oracle reconciles charger-cloud telemetry and event APIs with the driver's vehicle OEM telemetry APIs.",
   },
   {
     title: "Trustless Escrow",
-    body: "USDC is locked in a Solana smart contract prior to charging. Only when the oracle confirms a match between the hardware and the vehicle is the exact proportionate payment released to the host, returning any excess to the driver.",
+    body: "USDC is locked in a Solana smart contract prior to charging. When reconciliation and session rules pass, proportionate payment is released to the host and any excess is returned to the driver.",
   },
 ] as const;
 
@@ -52,7 +52,7 @@ const roadmapPhases = [
     items: [
       {
         label: "Legal & Compliance",
-        text: "Establish the formal legal wrapper/entity required to operate a hardware-interfacing decentralized network.",
+        text: "Establish the formal legal wrapper/entity required to operate an API-integrated decentralized energy coordination network.",
       },
       {
         label: "Smart Contract Audits",
@@ -65,7 +65,7 @@ const roadmapPhases = [
     ],
   },
   {
-    title: "Phase 2: Hardware Oracle & Protocol Middleware",
+    title: "Phase 2: API Oracle & Protocol Middleware",
     items: [
       {
         label: "OEM & Telemetry Integrations",
@@ -73,11 +73,11 @@ const roadmapPhases = [
       },
       {
         label: "Charger Middleware",
-        text: "Developing the software bridge to communicate with standard Level 2 and Level 3 charging hardware, allowing them to act as active nodes.",
+        text: "Expanding software bridges to charger-cloud APIs and network providers, enabling standard Level 2 / Level 3 infrastructure without custom hardware dependency.",
       },
       {
         label: "Oracle Deployment",
-        text: "Launching the V1 Dual-Verification Oracle to fully automate the reconciliation and payment release process.",
+        text: "Launching staged Dual-Verification Oracle automation for reconciliation and payment release using API-fed telemetry.",
       },
     ],
   },
@@ -145,7 +145,7 @@ export default function WhitepaperPage() {
                     <Money>$100,000 USD</Money> ecosystem grant to transition our V1
                     architecture from devnet to mainnet, finalize our legal entity
                     structuring, execute rigorous smart contract audits, and scale our
-                    engineering team for hardware integration.
+                    engineering team for API integrations and protocol reliability.
                   </p>
                   <p className="!mt-5 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
                     <strong className="font-semibold text-on-surface">

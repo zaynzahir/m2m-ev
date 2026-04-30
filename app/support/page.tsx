@@ -12,15 +12,15 @@ const FAQS = [
   },
   {
     q: "Is it safe to list my home charger on the network?",
-    a: "Absolutely. Hardware and property security is our baseline. M2M utilizes a physical 'Proof of Presence' system. A driver cannot remotely activate your charger. They must be physically present to scan a session-specific, cryptographically secure QR code generated on your Host Dashboard. This handshake authorizes the hardware, ensuring only verified users can access your charging node.",
+    a: "Absolutely. Property and session security are core design priorities. M2M uses physical Proof of Presence: a driver must be at the location and scan a session QR from the host dashboard. That prevents remote spoofing and keeps session flow tied to real-world presence.",
   },
   {
     q: "How does the QR code authentication work?",
-    a: "When a driver arrives at a reserved location, the host's dashboard will display a secure, time-sensitive QR code. The driver uses the M2M app to scan this code, creating a cryptographic signature that links their wallet, the vehicle, and the physical charger. Once the oracle validates this handshake, the hardware is unlocked and energy begins to flow.",
+    a: "When a driver arrives at a listed location, the host dashboard displays a secure session QR code. The driver scans it in M2M, and the app validates charger match before payment flow can continue. This step binds the session to place + listing and blocks remote misuse.",
   },
   {
     q: "What happens if a session disconnects or the hardware fails?",
-    a: "You only pay for the exact energy you receive. Because M2M uses a Dual-Verification Oracle, we continuously reconcile the energy output reported by the charger with the energy intake reported by your vehicle's telemetry. If a session drops or hardware fails, the oracle calculates the precise fractional energy delivered up to that millisecond, settles that exact amount with the host, and instantly refunds the remaining locked USDC back to the driver's wallet.",
+    a: "You only pay according to session rules and verified usage state. As OEM and charger-cloud integrations expand, M2M reconciliation uses those APIs to improve precision for delivered energy and settlement outcomes.",
   },
   {
     q: "Which wallets are supported by the M2M protocol?",

@@ -37,7 +37,7 @@ const PROTOCOL_STEPS = [
   {
     title: "Scan-to-Authenticate (Proof of Presence)",
     paragraphs: [
-      "To ensure absolute security and prevent spoofing, M2M requires physical Proof of Presence to unlock the hardware. Through the M2M host dashboard, the charger owner generates a unique, session-specific QR code. The driver uses their M2M app to scan this QR code directly at the physical location. Once the scan is validated by the network, the hardware is triggered, and the session officially begins.",
+      "To ensure security and prevent spoofing, M2M requires physical Proof of Presence before payment flow continues. Through the host dashboard, the charger owner generates a unique session QR. The driver scans at the location, and the system advances only after charger-match verification. This keeps remote spoofing out of the workflow while remaining API-first for charger and vehicle integrations.",
     ],
   },
   {
@@ -73,7 +73,7 @@ const LOOP_NODES = [
   {
     icon: "sync_alt",
     label: "Oracle reconciliation",
-    detail: "Hardware + vehicle data",
+    detail: "Charger cloud + vehicle API",
   },
   {
     icon: "payments",
@@ -98,36 +98,6 @@ export default function HowItWorksPage() {
             <h1 className="text-balance font-headline text-3xl font-extrabold tracking-tight text-on-surface sm:text-4xl md:text-5xl md:leading-[1.08]">
               How M2M powers the decentralized grid
             </h1>
-            <p className="mx-auto mt-6 max-w-3xl text-left text-[15px] leading-[1.85] text-on-surface-variant sm:text-lg">
-              M2M (Machine to Machine) is a DePIN protocol on Solana that connects EV
-              drivers with residential charging capacity. The full experience is built
-              around a closed loop: discovery on the map, cryptographic commitment
-              before energy flows,{" "}
-              <strong className="font-semibold text-on-surface">
-                QR code authentication
-              </strong>{" "}
-              to prove the driver is physically present, dual verification of energy
-              delivery, and programmable settlement back to participants&apos; wallets.
-              Together, these stages form the{" "}
-              <strong className="font-semibold text-on-surface">
-                M2M decentralized power loop
-              </strong>
-              : idle home infrastructure becomes verifiable, monetizable infrastructure,
-              while drivers gain trusted access without surrendering custody to a
-              traditional platform.
-            </p>
-            <p className="mx-auto mt-5 max-w-3xl text-left text-[15px] leading-[1.85] text-on-surface-variant sm:text-lg">
-              The{" "}
-              <strong className="font-semibold text-on-surface">
-                scan-to-authenticate
-              </strong>{" "}
-              layer is central to our security model. Session-bound QR codes tie a
-              charging session to a real-world location, closing the gap between
-              software intent and physical plug-in. Combined with oracle-backed
-              metering, the protocol minimizes fraud, supports future hardware
-              integrations, and keeps settlement aligned with actual energy
-              transferred.
-            </p>
           </header>
 
           {hasVideo ? (
@@ -174,6 +144,38 @@ export default function HowItWorksPage() {
               </div>
             </section>
           ) : null}
+
+          <section className="mx-auto mb-20 max-w-3xl md:mb-24">
+            <p className="text-left text-[15px] leading-[1.85] text-on-surface-variant sm:text-lg">
+              M2M (Machine to Machine) is a DePIN protocol on Solana that connects EV
+              drivers with residential charging capacity. The full experience is built
+              around a closed loop: discovery on the map, cryptographic commitment
+              before energy flows,{" "}
+              <strong className="font-semibold text-on-surface">
+                QR code authentication
+              </strong>{" "}
+              to prove the driver is physically present, dual verification of energy
+              delivery, and programmable settlement back to participants&apos; wallets.
+              Together, these stages form the{" "}
+              <strong className="font-semibold text-on-surface">
+                M2M decentralized power loop
+              </strong>
+              : idle home infrastructure becomes verifiable, monetizable infrastructure,
+              while drivers gain trusted access without surrendering custody to a
+              traditional platform.
+            </p>
+            <p className="mt-5 text-left text-[15px] leading-[1.85] text-on-surface-variant sm:text-lg">
+              The{" "}
+              <strong className="font-semibold text-on-surface">
+                scan-to-authenticate
+              </strong>{" "}
+              layer is central to our security model. Session-bound QR codes tie a
+              charging session to a real-world location, closing the gap between
+              software intent and physical plug-in. Combined with API-backed metering
+              from charger clouds and vehicle OEM platforms, the protocol minimizes
+              fraud and keeps settlement aligned with actual delivered energy.
+            </p>
+          </section>
 
           <section
             aria-labelledby="power-loop-overview"

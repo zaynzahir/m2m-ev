@@ -22,9 +22,9 @@ export function AuthQrModal({
   const qrPayload = useMemo(() => {
     if (!chargerId) return "";
     if (typeof window === "undefined") {
-      return `/charge?charger=${encodeURIComponent(chargerId)}&source=qr`;
+      return `/?charger=${encodeURIComponent(chargerId)}&source=qr`;
     }
-    const url = new URL("/charge", window.location.origin);
+    const url = new URL("/", window.location.origin);
     url.searchParams.set("charger", chargerId);
     url.searchParams.set("source", "qr");
     return url.toString();

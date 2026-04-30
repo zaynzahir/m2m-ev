@@ -25,7 +25,7 @@ const SETTLE_JSON = `{
 const NAV_ITEMS = [
   { id: "introduction", label: "Introduction" },
   { id: "smart-contracts", label: "Smart Contracts" },
-  { id: "hardware-oracle-api", label: "Hardware Oracle API" },
+  { id: "hardware-oracle-api", label: "API Integration Oracle" },
   { id: "sdk-setup", label: "SDK Setup" },
 ] as const;
 
@@ -75,12 +75,12 @@ export default function DocsPage() {
                 <div className="mt-6 space-y-5 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
                   <p>
                     Welcome to the M2M Developer Documentation. The M2M stack empowers
-                    developers, hardware manufacturers, and node operators to interface
+                    developers, charger-cloud partners, and node operators to interface
                     with the world&apos;s first Solana-native DePIN for
                     machine-to-machine energy transfer. This documentation covers our
                     on-chain Anchor programs, the Dual-Verification Oracle middleware,
                     and the TypeScript SDK required to build client applications and
-                    integrate charging hardware.
+                    integrate vehicle and charger APIs.
                   </p>
                   <p>
                     The M2M project is{" "}
@@ -185,7 +185,7 @@ export default function DocsPage() {
 
               <section id="hardware-oracle-api" className="scroll-mt-32">
                 <h2 className="font-headline text-2xl font-bold tracking-tight text-on-surface sm:text-3xl">
-                  Hardware Oracle API (V2)
+                  API Integration Oracle (V2)
                 </h2>
                 <p className="mt-6 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
                   The M2M Oracle is the target trust boundary between the physical
