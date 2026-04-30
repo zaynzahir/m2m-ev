@@ -2,6 +2,31 @@ import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { HowItWorksCta } from "@/components/how-it-works/HowItWorksCta";
 
+const DEFAULT_LOCAL_VIDEO_URL = "/videos/how-it-works..mov";
+const HOW_IT_WORKS_VIDEO_URL =
+  process.env.NEXT_PUBLIC_HOW_IT_WORKS_VIDEO_URL?.trim() ||
+  DEFAULT_LOCAL_VIDEO_URL;
+
+function getYouTubeEmbedUrl(rawUrl: string): string | null {
+  if (!rawUrl) return null;
+  try {
+    const url = new URL(rawUrl);
+    const host = url.hostname.toLowerCase();
+    if (host.includes("youtu.be")) {
+      const id = url.pathname.replace("/", "").trim();
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    }
+    if (host.includes("youtube.com")) {
+      const id = url.searchParams.get("v")?.trim();
+      if (!id) return null;
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 const PROTOCOL_STEPS = [
   {
     title: "On-Chain Handshake & Escrow Lock",
@@ -58,6 +83,9 @@ const LOOP_NODES = [
 ] as const;
 
 export default function HowItWorksPage() {
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(HOW_IT_WORKS_VIDEO_URL);
+  const hasVideo = Boolean(HOW_IT_WORKS_VIDEO_URL);
+
   return (
     <>
       <Navbar />
@@ -149,6 +177,51 @@ export default function HowItWorksPage() {
               </div>
             </div>
           </section>
+
+          {hasVideo ? (
+            <section aria-labelledby="how-it-works-video" className="mx-auto mb-20 max-w-4xl md:mb-24">
+              <div className="overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-br from-primary/10 via-black to-secondary/15 p-[1px] shadow-[0_0_70px_rgba(52,254,160,0.12)]">
+                <div className="rounded-[calc(1.5rem-1px)] bg-[#040405]/95 p-5 sm:p-7">
+                  <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-headline text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                        Product walkthrough
+                      </p>
+                      <h2
+                        id="how-it-works-video"
+                        className="mt-1 font-headline text-xl font-bold text-on-surface sm:text-2xl"
+                      >
+                        Watch how M2M works in practice
+                      </h2>
+                    </div>
+                    <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+                      Live demo
+                    </span>
+                  </div>
+
+                  <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
+                    <div className="aspect-video w-full">
+                      {youtubeEmbedUrl ? (
+                        <iframe
+                          src={youtubeEmbedUrl}
+                          title="How M2M works video walkthrough"
+                          className="h-full w-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video className="h-full w-full" controls playsInline preload="metadata">
+                          <source src={HOW_IT_WORKS_VIDEO_URL} type="video/quicktime" />
+                          <source src={HOW_IT_WORKS_VIDEO_URL} />
+                          Sorry, your browser does not support embedded videos.
+                        </video>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           <section aria-labelledby="protocol-breakdown" className="mx-auto max-w-4xl">
             <h2

@@ -29,11 +29,11 @@ export function Footer() {
           </Link>
           <a
             className="transition-colors hover:text-[#b984ff]"
-            href="https://twitter.com"
+            href="https://x.com/m2m_energy?s=11"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Twitter
+            X
           </a>
           <a
             className="transition-colors hover:text-[#b984ff]"

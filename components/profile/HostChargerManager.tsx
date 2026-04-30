@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Map, { Marker } from "react-map-gl/mapbox";
 import mapboxgl from "mapbox-gl";
 
+import { AuthQrModal } from "@/components/dashboard/AuthQrModal";
 import {
   deleteChargerForOwner,
   fetchChargersByOwnerId,
@@ -57,6 +58,7 @@ export function HostChargerManager({ ownerId }: HostChargerManagerProps) {
     lat: number;
     lng: number;
   } | null>(null);
+  const [qrModal, setQrModal] = useState<{ id: string; title: string } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -433,6 +435,18 @@ export function HostChargerManager({ ownerId }: HostChargerManagerProps) {
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
+                        onClick={() =>
+                          setQrModal({
+                            id: c.id,
+                            title: c.title ?? c.label ?? "Charger",
+                          })
+                        }
+                        className="rounded-lg border border-primary/35 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/10"
+                      >
+                        Show Host QR
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => startEdit(c)}
                         className="rounded-lg border border-[#34fea0]/35 px-3 py-1.5 text-xs font-bold text-[#34fea0] hover:bg-[#34fea0]/10"
                       >
@@ -579,6 +593,13 @@ export function HostChargerManager({ ownerId }: HostChargerManagerProps) {
           </div>
         </div>
       ) : null}
+
+      <AuthQrModal
+        open={qrModal !== null}
+        chargerId={qrModal?.id ?? ""}
+        nodeTitle={qrModal?.title ?? ""}
+        onClose={() => setQrModal(null)}
+      />
     </section>
   );
 }
