@@ -119,14 +119,17 @@ export function HostQrScanModal({
         html5Ref.current = qr;
 
         const config = {
-          fps: 12,
+          fps: 15,
           aspectRatio: 1,
           rememberLastUsedCamera: true,
-          disableFlip: false,
+          disableFlip: true,
           formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
+          },
           qrbox: (viewW: number, viewH: number) => {
             const m = Math.min(viewW, viewH);
-            const side = Math.min(300, Math.max(190, Math.floor(m * 0.74)));
+            const side = Math.min(340, Math.max(220, Math.floor(m * 0.82)));
             return { width: side, height: side };
           },
         };
@@ -137,7 +140,7 @@ export function HostQrScanModal({
             const extracted = extractChargerIdFromQrPayload(decodedText);
             const expectLower = expectedChargerId.toLowerCase();
             if (!extracted || extracted !== expectLower) {
-              setHint("Wrong QR — scan the printed sticker for this charger.");
+              setHint("QR detected but not this charger. Scan the host QR that matches this listing.");
               return;
             }
             verifiedRef.current = true;

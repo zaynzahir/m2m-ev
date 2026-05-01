@@ -43,11 +43,13 @@ export function AuthQrModal({
     if (!open || !qrPayload) return;
     let disposed = false;
     void toDataURL(qrPayload, {
-      margin: 2,
-      width: 420,
+      margin: 3,
+      width: 640,
+      errorCorrectionLevel: "H",
       color: {
-        dark: "#34fea0",
-        light: "#050506",
+        // Keep QR itself high-contrast for reliable scanner decoding.
+        dark: "#000000",
+        light: "#ffffff",
       },
     }).then((url) => {
       if (!disposed) setQrDataUrl(url);
@@ -105,12 +107,12 @@ export function AuthQrModal({
             </button>
           </div>
 
-          <div className="mx-auto flex aspect-square max-h-[220px] w-full max-w-[220px] items-center justify-center overflow-hidden rounded-xl border border-primary/25 bg-black/60">
+          <div className="mx-auto flex aspect-square max-h-[280px] w-full max-w-[280px] items-center justify-center overflow-hidden rounded-xl border border-primary/25 bg-white p-2">
             {qrDataUrl ? (
               <img
                 src={qrDataUrl}
                 alt={`Stable charger QR for ${nodeTitle}`}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
               />
             ) : (
               <span className="material-symbols-outlined text-5xl text-primary/50">
