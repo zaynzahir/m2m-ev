@@ -117,6 +117,7 @@ export function ChargerMap() {
   const [activeIntentId, setActiveIntentId] = useState<string | null>(null);
   const [activeHostHasPayoutWallet, setActiveHostHasPayoutWallet] = useState<boolean>(true);
   const [toast, setToast] = useState<string | null>(null);
+  const [sessionStartedOpen, setSessionStartedOpen] = useState(false);
   const qrAutoOpenHandledRef = useRef(false);
 
   /** After first driver GPS sync, avoid re-flying / re-selecting on every tick. */
@@ -503,11 +504,7 @@ export function ChargerMap() {
             </>
           ) : (
             <p className="text-sm text-on-surface-variant">
-              No active chargers yet. Run{" "}
-              <code className="text-xs text-primary">supabase/schema.sql</code>{" "}
-              and{" "}
-              <code className="text-xs text-primary">supabase/seed.sql</code>{" "}
-              in the Supabase SQL editor.
+              No active chargers are available right now. Please check back shortly.
             </p>
           )}
         </div>
@@ -539,9 +536,39 @@ export function ChargerMap() {
         onClose={() => setScanOpen(false)}
         onVerified={() => {
           setScanOpen(false);
-          setEscrowOpen(true);
+          setSessionStartedOpen(true);
         }}
       />
+
+      {sessionStartedOpen ? (
+        <div className="fixed inset-0 z-[112] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md sm:p-6">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#050506] p-6 shadow-[0_0_60px_rgba(52,254,160,0.1)] sm:p-8">
+            <p className="font-headline text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+              Session status
+            </p>
+            <h3 className="mt-2 font-headline text-2xl font-extrabold text-on-surface">
+              Session started
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+              Your QR was verified and the session request was received successfully.
+            </p>
+            <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs leading-relaxed text-on-surface-variant">
+              Payment execution details are <strong>coming soon</strong> in this flow.
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSessionStartedOpen(false);
+                setActiveIntentId(null);
+                setActiveHostHasPayoutWallet(true);
+              }}
+              className="mt-6 w-full rounded-xl bg-primary py-3 font-headline text-sm font-bold text-on-primary-fixed transition hover:brightness-110"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <SessionEscrowModal
         open={escrowOpen}

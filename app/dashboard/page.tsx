@@ -43,6 +43,22 @@ function shortWallet(address: string | null) {
   return `${address.slice(0, 6)}…${address.slice(-6)}`;
 }
 
+function toSafeDashboardError(e: unknown): string {
+  const msg = e instanceof Error ? e.message : "Failed to load dashboard.";
+  const lower = msg.toLowerCase();
+  if (
+    lower.includes("lock:") ||
+    lower.includes("lock broken by another request") ||
+    lower.includes("steal option")
+  ) {
+    return "Dashboard sync is busy. Please refresh once, or close duplicate tabs.";
+  }
+  if (lower.includes("jwt") || lower.includes("token")) {
+    return "Session check failed. Please sign in again.";
+  }
+  return msg;
+}
+
 function displayChargerOperationalStatus(c: ChargerRow): string {
   if (c.status === "charging") return "Energized";
   if (c.active_driver_wallet) return "Pending Auth";
@@ -334,7 +350,7 @@ export default function DashboardPage() {
       setHostLastSessionAt(null);
       setActiveListingsCount(0);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load dashboard.");
+      setError(toSafeDashboardError(e));
     } finally {
       setLoading(false);
     }
