@@ -11,8 +11,10 @@ import { GridRoleModal } from "@/components/auth/GridRoleModal";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { HostChargerManager } from "@/components/profile/HostChargerManager";
 import {
+  deleteCurrentAccount,
   linkWalletToAuthProfile,
   resendSignupConfirmation,
+  syncAuthEmailVerification,
 } from "@/lib/supabase/client";
 import { useM2MProfile } from "@/hooks/useM2MProfile";
 
@@ -24,6 +26,8 @@ export default function ProfilePage() {
   const [verifyNotice, setVerifyNotice] = useState<string | null>(null);
   const [walletSyncing, setWalletSyncing] = useState(false);
   const [walletSyncError, setWalletSyncError] = useState<string | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null);
   const walletLinkAttemptKey = useRef<string | null>(null);
 
   useEffect(() => {
@@ -71,9 +75,48 @@ export default function ProfilePage() {
     };
   }, [connected, publicKey, user, profile, loading, refetch]);
 
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    void syncAuthEmailVerification()
+      .then(async () => {
+        if (!cancelled) await refetch();
+      })
+      .catch(() => {
+        // Non-fatal: profile still renders from last known state.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, refetch]);
+
   const onLogoutAll = async () => {
     await signOut();
     if (connected) await disconnect();
+  };
+
+  const onDeleteAccount = async () => {
+    setDeleteAccountError(null);
+    if (!user) {
+      setDeleteAccountError("Sign in with email to delete this account.");
+      return;
+    }
+    const confirmed = window.confirm(
+      "Delete your account permanently? This removes your profile and charger listings.",
+    );
+    if (!confirmed) return;
+    setDeletingAccount(true);
+    try {
+      await deleteCurrentAccount();
+      await onLogoutAll();
+      window.location.assign("/");
+    } catch (e) {
+      setDeleteAccountError(
+        e instanceof Error ? e.message : "Could not delete your account.",
+      );
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   const showHost = profile?.role === "host" || profile?.role === "both";
@@ -233,12 +276,23 @@ export default function ProfilePage() {
             >
               <button
                 type="button"
+                onClick={() => void onDeleteAccount()}
+                disabled={deletingAccount}
+                className="rounded-xl border border-error/40 px-5 py-2.5 font-headline text-sm font-bold text-error transition hover:bg-error/10 disabled:opacity-60"
+              >
+                {deletingAccount ? "Deleting account…" : "Delete account"}
+              </button>
+              <button
+                type="button"
                 onClick={() => void onLogoutAll()}
                 className="rounded-xl border border-white/15 px-5 py-2.5 font-headline text-sm font-bold text-on-surface-variant transition hover:bg-white/5 hover:text-on-surface"
               >
                 Sign out everywhere
               </button>
             </div>
+            {deleteAccountError ? (
+              <p className="text-right text-sm text-error">{deleteAccountError}</p>
+            ) : null}
           </div>
         )}
       </main>

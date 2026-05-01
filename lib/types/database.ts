@@ -11,6 +11,7 @@ export type UserProfileRow = {
   id: string;
   wallet_address: string | null;
   auth_user_id: string | null;
+  age: number | null;
   role: UserRole;
   display_name: string | null;
   vehicle_model: string | null;

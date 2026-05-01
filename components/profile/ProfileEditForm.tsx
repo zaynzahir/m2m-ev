@@ -31,6 +31,9 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
   const [contactMethod, setContactMethod] = useState(
     profile.contact_method ?? "",
   );
+  const [ageInput, setAgeInput] = useState(
+    profile.age !== null && profile.age !== undefined ? String(profile.age) : "",
+  );
   const [role, setRole] = useState<UserRole>(profile.role);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +47,9 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
     setDisplayName(profile.display_name ?? "");
     setVehicleModel(profile.vehicle_model ?? "");
     setContactMethod(profile.contact_method ?? "");
+    setAgeInput(
+      profile.age !== null && profile.age !== undefined ? String(profile.age) : "",
+    );
     setRole(profile.role);
   };
 
@@ -55,12 +61,20 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
     setSubmitting(true);
     try {
       const vehiclePayload = isDriver ? vehicleModel.trim() || null : null;
+      const parsedAge =
+        ageInput.trim().length === 0
+          ? null
+          : Number.parseInt(ageInput.trim(), 10);
+      if (parsedAge !== null && (!Number.isInteger(parsedAge) || parsedAge < 13 || parsedAge > 120)) {
+        throw new Error("Age must be a whole number between 13 and 120.");
+      }
 
       if (user) {
         await updateAuthUserProfile({
           display_name: displayName.trim() || null,
           vehicle_model: vehiclePayload,
           contact_method: contactMethod.trim() || null,
+          age: parsedAge,
         });
         if (role !== profile.role) {
           await updateUserRoleForAuth(role);
@@ -70,6 +84,7 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
           display_name: displayName.trim() || null,
           vehicle_model: vehiclePayload,
           contact_method: contactMethod.trim() || null,
+          age: parsedAge,
         });
         if (role !== profile.role) {
           await updateUserRoleForWallet(publicKey.toBase58(), role);
@@ -155,6 +170,26 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
           {isHost
             ? "Shown on listings and in session handoffs."
             : "How you appear in the app."}
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-on-surface-variant" htmlFor="pe-age">
+          Age
+        </label>
+        <input
+          id="pe-age"
+          type="number"
+          min={13}
+          max={120}
+          value={ageInput}
+          onChange={(e) => setAgeInput(e.target.value)}
+          disabled={!editing}
+          placeholder="e.g. 24"
+          className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
+        />
+        <p className="text-[11px] text-on-surface-variant">
+          Optional. Used for account settings and compliance checks.
         </p>
       </div>
 

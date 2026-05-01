@@ -38,6 +38,32 @@ export function HostQrScanModal({
   const [hint, setHint] = useState<string | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
   const [lastDecoded, setLastDecoded] = useState<string | null>(null);
+  const [scanBootKey, setScanBootKey] = useState(0);
+
+  const waitForVideoFrame = useCallback(async (containerId: string): Promise<boolean> => {
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < 2400) {
+      const video = document.querySelector<HTMLVideoElement>(`#${containerId} video`);
+      if (video) {
+        // iOS Safari is sensitive here; make sure the element is configured for inline playback.
+        video.setAttribute("playsinline", "true");
+        video.setAttribute("muted", "true");
+        video.setAttribute("autoplay", "true");
+        video.playsInline = true;
+        video.muted = true;
+        void video.play().catch(() => {
+          // keep polling; camera may still initialize
+        });
+        if (video.videoWidth > 0 && video.videoHeight > 0 && video.readyState >= 2) {
+          return true;
+        }
+      }
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 120);
+      });
+    }
+    return false;
+  }, []);
 
   const stopScanner = useCallback(async () => {
     if (stoppingRef.current) return;
@@ -67,6 +93,22 @@ export function HostQrScanModal({
     const run = async () => {
       verifiedRef.current = false;
       setFatal(null);
+      if (typeof window !== "undefined" && !window.isSecureContext) {
+        setFatal(
+          "Camera needs a secure site (HTTPS). Open the secure domain in Safari and try again.",
+        );
+        return;
+      }
+      if (
+        typeof navigator === "undefined" ||
+        !navigator.mediaDevices ||
+        typeof navigator.mediaDevices.getUserMedia !== "function"
+      ) {
+        setFatal(
+          "This browser cannot access the camera. Open this page in Safari/Chrome on your phone.",
+        );
+        return;
+      }
       setHint('Starting camera… If prompted, tap "Allow" so we can verify the printed host QR.');
       try {
         const mod = await import("html5-qrcode");
@@ -113,23 +155,44 @@ export function HostQrScanModal({
             }
           };
 
-        try {
-          await qr.start(
-            { facingMode: { ideal: "environment" } },
-            config,
-            onScanSuccess,
-            () => {},
-          );
-        } catch {
-          const cameras = await Html5Qrcode.getCameras();
-          const backCam = cameras.find((c: { label: string }) =>
-            /back|rear|environment/i.test(c.label),
-          );
-          await qr.start(
-            backCam?.id ?? cameras[0]?.id,
-            config,
-            onScanSuccess,
-            () => {},
+        const cameras = await Html5Qrcode.getCameras().catch(() => []);
+        const backFirst = cameras
+          .filter((c: { label: string }) => /back|rear|environment/i.test(c.label))
+          .map((c: { id: string }) => c.id);
+        const rest = cameras
+          .map((c: { id: string }) => c.id)
+          .filter((id: string) => !backFirst.includes(id));
+        const candidates: Array<string | { facingMode: { ideal: string } }> = [
+          ...backFirst,
+          ...rest,
+          { facingMode: { ideal: "environment" } },
+        ];
+
+        let started = false;
+        let lastErr: unknown = null;
+        for (const source of candidates) {
+          try {
+            await qr.start(source, config, onScanSuccess, () => {});
+            const hasFrames = await waitForVideoFrame(readerDomId);
+            if (hasFrames) {
+              started = true;
+              break;
+            }
+            await qr.stop();
+          } catch (startErr) {
+            lastErr = startErr;
+            try {
+              await qr.stop();
+            } catch {
+              // noop
+            }
+          }
+        }
+
+        if (!started) {
+          throw (
+            lastErr ??
+            new Error("Camera initialized but no video frames were received.")
           );
         }
 
@@ -138,7 +201,7 @@ export function HostQrScanModal({
         const msg =
           e instanceof Error ? e.message : "Could not access the camera.";
         setFatal(
-          `${msg} On desktop, connect a webcam or complete this step on your phone.`,
+          `${msg} If camera permission is already allowed, open this page directly in Safari/Chrome (not an in-app browser) and tap Retry camera.`,
         );
       }
     };
@@ -149,7 +212,15 @@ export function HostQrScanModal({
       disposed = true;
       void stopScanner();
     };
-  }, [open, readerDomId, expectedChargerId, intentId, stopScanner]);
+  }, [
+    open,
+    readerDomId,
+    expectedChargerId,
+    intentId,
+    stopScanner,
+    scanBootKey,
+    waitForVideoFrame,
+  ]);
 
   if (!open) return null;
 
@@ -186,6 +257,18 @@ export function HostQrScanModal({
             id={readerDomId}
             className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-xl border border-primary/25 bg-black"
           />
+          <style jsx global>{`
+            div[id^="host-qr-reader-"] video {
+              width: 100% !important;
+              height: 100% !important;
+              object-fit: cover !important;
+              background: #000 !important;
+            }
+            div[id^="host-qr-reader-"] canvas {
+              width: 100% !important;
+              height: 100% !important;
+            }
+          `}</style>
 
           {hint ? (
             <p className="text-center text-xs leading-relaxed text-amber-200/95" role="status">
@@ -201,6 +284,19 @@ export function HostQrScanModal({
             <p className="text-center text-sm text-error" role="alert">
               {fatal}
             </p>
+          ) : null}
+          {fatal ? (
+            <button
+              type="button"
+              onClick={() => {
+                setFatal(null);
+                setHint("Retrying camera…");
+                setScanBootKey((n) => n + 1);
+              }}
+              className="w-full rounded-xl border border-primary/35 bg-primary/10 py-2.5 font-headline text-sm font-semibold text-primary transition-colors hover:bg-primary/15"
+            >
+              Retry camera
+            </button>
           ) : null}
 
           <button

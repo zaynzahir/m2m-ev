@@ -88,6 +88,19 @@ function optionalString(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function optionalAge(value: unknown): number | null {
+  if (typeof value === "number" && Number.isInteger(value)) {
+    return value >= 13 && value <= 120 ? value : null;
+  }
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isInteger(parsed) && parsed >= 13 && parsed <= 120) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
 export async function signOutAll(): Promise<void> {
   const supabase = getSupabaseBrowserClient();
   await supabase.auth.signOut();
@@ -109,6 +122,7 @@ export async function signUpWithEmail(
     vehicleModel?: string;
     contactMethod?: string;
     walletAddress?: string;
+    age?: number;
   },
 ): Promise<{ needsEmailConfirmation: boolean }> {
   const supabase = getSupabaseBrowserClient();
@@ -123,6 +137,7 @@ export async function signUpWithEmail(
         vehicle_model: profileInput?.vehicleModel?.trim() || null,
         contact_method: profileInput?.contactMethod?.trim() || null,
         wallet_address: profileInput?.walletAddress?.trim() || null,
+        age: optionalAge(profileInput?.age),
       },
     },
   });
@@ -155,6 +170,7 @@ export async function ensureAuthProfileRowForUser(user: User): Promise<void> {
   const metadataVehicleModel = optionalString(user.user_metadata?.vehicle_model);
   const metadataContactMethod = optionalString(user.user_metadata?.contact_method);
   const metadataWalletAddress = optionalString(user.user_metadata?.wallet_address);
+  const metadataAge = optionalAge(user.user_metadata?.age);
 
   const { data: existing, error: findErr } = await supabase
     .from("users")
@@ -175,6 +191,7 @@ export async function ensureAuthProfileRowForUser(user: User): Promise<void> {
         vehicle_model: metadataVehicleModel,
         contact_method: metadataContactMethod,
         wallet_address: metadataWalletAddress,
+        age: metadataAge,
         onboarding_completed_at:
           metadataDisplayName || metadataContactMethod || metadataVehicleModel
             ? new Date().toISOString()
@@ -193,6 +210,7 @@ export async function ensureAuthProfileRowForUser(user: User): Promise<void> {
     vehicle_model: metadataVehicleModel,
     contact_method: metadataContactMethod,
     wallet_address: metadataWalletAddress,
+    age: metadataAge,
     onboarding_completed_at:
       metadataDisplayName || metadataContactMethod || metadataVehicleModel
         ? new Date().toISOString()
@@ -266,6 +284,29 @@ export async function resendSignupConfirmation(email: string): Promise<void> {
     type: "signup",
     email: email.trim(),
   });
+  if (error) throw error;
+}
+
+/**
+ * Mirrors verified-email timestamp from Supabase Auth into `public.users`.
+ * Safe to call multiple times (profile header/status refresh use case).
+ */
+export async function syncAuthEmailVerification(): Promise<void> {
+  const supabase = getSupabaseBrowserClient();
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+  if (userErr) throw userErr;
+  if (!user) return;
+  const { error } = await supabase
+    .from("users")
+    .update({
+      email_verified_at: emailVerifiedAtIso(user),
+      email: user.email ?? null,
+      auth_provider: authProviderFromSupabaseUser(user),
+    })
+    .eq("auth_user_id", user.id);
   if (error) throw error;
 }
 
@@ -815,6 +856,7 @@ export async function updateAuthUserProfile(
       | "display_name"
       | "vehicle_model"
       | "contact_method"
+      | "age"
       | "role"
       | "onboarding_completed_at"
     >
@@ -842,6 +884,7 @@ export async function updateWalletUserProfile(
       | "display_name"
       | "vehicle_model"
       | "contact_method"
+      | "age"
       | "role"
       | "onboarding_completed_at"
     >
@@ -853,6 +896,40 @@ export async function updateWalletUserProfile(
     .update(patch)
     .eq("wallet_address", walletAddress);
   if (error) throw error;
+}
+
+/**
+ * Deletes the currently signed-in account and associated user-owned rows.
+ * Uses a server API route backed by Supabase service role.
+ */
+export async function deleteCurrentAccount(): Promise<void> {
+  const supabase = getSupabaseBrowserClient();
+  const {
+    data: { session },
+    error: sessionErr,
+  } = await supabase.auth.getSession();
+  if (sessionErr) throw sessionErr;
+  if (!session?.access_token) throw new Error("Sign in again to delete your account.");
+
+  const response = await fetch("/api/account/delete", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({}),
+  });
+
+  if (!response.ok) {
+    let msg = "Could not delete account.";
+    try {
+      const body = (await response.json()) as { error?: string };
+      if (body?.error) msg = body.error;
+    } catch {
+      // noop
+    }
+    throw new Error(msg);
+  }
 }
 
 export async function updateUserRoleForAuth(role: UserRole): Promise<void> {

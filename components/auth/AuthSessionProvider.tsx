@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { ensureAuthProfileRow, getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AuthSessionContextValue = {
   session: Session | null;
@@ -45,6 +45,11 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
+      if (s?.user) {
+        void ensureAuthProfileRow().catch(() => {
+          // Keep auth session stable even if profile-sync fails transiently.
+        });
+      }
     });
 
     return () => subscription.unsubscribe();
