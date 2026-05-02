@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useM2MProfile } from "@/hooks/useM2MProfile";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { updateAuthUserProfile } from "@/lib/supabase/client";
 import type { UserRole } from "@/lib/types/database";
 
@@ -99,7 +100,12 @@ export function GoogleProfileCompletionModal() {
       await refetch();
       setOpen(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save profile.");
+      setError(
+        toSafeToastError(
+          e,
+          "Could not save profile. Refresh once or email info@m2m.energy.",
+        ),
+      );
     } finally {
       setSaving(false);
     }

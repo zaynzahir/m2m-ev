@@ -4,6 +4,7 @@ import type { Html5Qrcode } from "html5-qrcode";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { extractChargerIdFromQrPayload } from "@/lib/charger/qrPayload";
 import { hasSupabasePublicConfig } from "@/lib/env/public";
 import { updateChargingSessionIntentStage } from "@/lib/supabase/client";
@@ -154,7 +155,12 @@ export function HostQrScanModal({
               onVerifiedRef.current();
             } catch (e: unknown) {
               verifiedRef.current = false;
-              setFatal(e instanceof Error ? e.message : "Could not verify session.");
+              setFatal(
+                toSafeToastError(
+                  e,
+                  "Could not verify this scan. Retry or email info@m2m.energy.",
+                ),
+              );
             }
           };
 
@@ -201,10 +207,12 @@ export function HostQrScanModal({
 
         setHint(null);
       } catch (e: unknown) {
-        const msg =
-          e instanceof Error ? e.message : "Could not access the camera.";
+        const base = toSafeToastError(
+          e,
+          "Could not access the camera. Check permissions in device settings.",
+        );
         setFatal(
-          `${msg} If camera permission is already allowed, open this page directly in Safari/Chrome (not an in-app browser) and tap Retry camera.`,
+          `${base} If permission is already allowed, open this site in Safari or Chrome (not an in app browser) and tap Retry camera.`,
         );
       }
     };

@@ -8,23 +8,23 @@ import { Navbar } from "@/components/Navbar";
 const FAQS = [
   {
     q: "How do I get paid as a host?",
-    a: "Earnings are settled instantly and trustlessly on the Solana blockchain. When a driver initiates a session, their estimated USDC cost is locked in an on-chain escrow smart contract. Once the session is complete, our Dual-Verification Oracle confirms the exact energy delivered and releases the funds directly to your connected wallet. There are no centralized payment processors, meaning you receive your funds with sub-second finality and zero intermediary fees.",
+    a: "Payout timing follows the escrow program and session outcome you approve in wallet. Drivers commit estimated USDC on chain during the handshake, and reconciliation continues to tighten as charger cloud and OEM APIs connect. Near term you should treat earnings as routed through escrow rules visible at signing time rather than instantaneous automatic metering from legacy payment rails.",
   },
   {
     q: "Is it safe to list my home charger on the network?",
-    a: "Absolutely. Property and session security are core design priorities. M2M uses physical Proof of Presence: a driver must be at the location and scan a session QR from the host dashboard. That prevents remote spoofing and keeps session flow tied to real-world presence.",
+    a: "We design sessions around proof of presence. A driver must be at your location and scan the session QR you show from your dashboard before payment continuation. That lowers remote spoofing risk and binds intent to real world presence alongside our API roadmap for telemetry.",
   },
   {
     q: "How does the QR code authentication work?",
-    a: "When a driver arrives at a listed location, the host dashboard displays a secure session QR code. The driver scans it in M2M, and the app validates charger match before payment flow can continue. This step binds the session to place + listing and blocks remote misuse.",
+    a: "When a driver arrives, your dashboard exposes a scoped QR for this listing. The driver scans inside M2M and the app verifies a listing match before the payment step. Place and charger identity therefore stay aligned instead of trusting GPS alone.",
   },
   {
-    q: "What happens if a session disconnects or the hardware fails?",
-    a: "You only pay according to session rules and verified usage state. As OEM and charger-cloud integrations expand, M2M reconciliation uses those APIs to improve precision for delivered energy and settlement outcomes.",
+    q: "What happens if a session disconnects or the charger stops?",
+    a: "Charges follow the escrow and session ledger state you acknowledged when signing. As OEM and charger cloud integrations widen, reconciliation will lean on APIs for delivered energy readings and clearer settlement outcomes.",
   },
   {
     q: "Which wallets are supported by the M2M protocol?",
-    a: "M2M supports all major standard Solana wallet adapters. For desktop users, we highly recommend Phantom, Solflare, or Backpack browser extensions. For drivers on the go, our mobile web application supports seamless deep-linking into the native mobile apps of these respective wallets for secure, one-tap escrow signing.",
+    a: "M2M uses the Solana wallet adapter ecosystem. Common desktop choices include Phantom, Solflare, and Binance Web3 Wallet. On mobile browsers we open deep links into the respective wallet apps so you can approve escrow steps with fewer manual copy paste flows.",
   },
 ] as const;
 
@@ -44,9 +44,15 @@ export default function SupportPage() {
             Support
           </h1>
           <p className="max-w-2xl text-[15px] leading-relaxed text-on-surface-variant sm:text-base">
-            Clear answers for hosts and drivers on payments, safety, QR
-            authentication, sessions, and wallets. Open one question at a time for
-            an easy read.
+            Clear answers on payments, safety, QR authorization, sessions, and wallets.
+            Open one question at a time. Need more help email{" "}
+            <a
+              href="mailto:info@m2m.energy"
+              className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+            >
+              info@m2m.energy
+            </a>
+            .
           </p>
         </header>
 

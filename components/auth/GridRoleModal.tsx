@@ -4,6 +4,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { completeGridParticipationOnboarding } from "@/lib/supabase/client";
 import type { UserProfileRow, UserRole } from "@/lib/types/database";
 
@@ -52,7 +53,10 @@ export function GridRoleModal({ profile, onCompleted }: GridRoleModalProps) {
       onCompleted();
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Could not save your choice.",
+        toSafeToastError(
+          e,
+          "Could not save your choice. Refresh once or email info@m2m.energy.",
+        ),
       );
     } finally {
       setSaving(false);

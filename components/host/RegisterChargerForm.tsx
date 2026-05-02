@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 import type { ChargerType } from "@/lib/supabase/client";
 import { createChargerListing } from "@/lib/supabase/client";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { getPublicEnv, hasMapboxPublicToken } from "@/lib/env/public";
 import { SUPPORTED_CHARGER_BRANDS } from "@/lib/supported-brands";
 
@@ -84,7 +85,7 @@ export function RegisterChargerForm() {
     if (!hasMapboxPublicToken()) {
       showToast(
         "error",
-        "Mapbox token missing. Add NEXT_PUBLIC_MAPBOX_TOKEN to .env.local and restart dev.",
+        "Location map is unavailable. Try again later or email info@m2m.energy for help.",
       );
       return;
     }
@@ -128,9 +129,10 @@ export function RegisterChargerForm() {
     } catch (e) {
       showToast(
         "error",
-        e instanceof Error
-          ? e.message
-          : "Failed to list charger. Check Supabase policies.",
+        toSafeToastError(
+          e,
+          "We could not save your listing. Refresh once or email info@m2m.energy if it continues.",
+        ),
       );
     } finally {
       setSubmitting(false);
@@ -150,9 +152,10 @@ export function RegisterChargerForm() {
           <h1 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mt-2">
             Register Your Charger
           </h1>
-          <p className="text-on-surface-variant text-base sm:text-lg leading-relaxed mt-3 max-w-2xl">
-            Connect your wallet, drop a pin for your charger, and list your
-            rate so verified drivers can start sessions.
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-on-surface-variant sm:text-lg">
+            Connect your Solana wallet, pick coordinates on the map, and publish price
+            so drivers can discover you before escrow steps. Telemetry from charger clouds
+            continues on our phased integration plan.
           </p>
         </div>
 
@@ -171,7 +174,7 @@ export function RegisterChargerForm() {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 className={inputClass}
-                placeholder="e.g., Zayn’s Driveway"
+                placeholder="e.g., Maple Street driveway spot"
               />
             </div>
 
@@ -231,13 +234,12 @@ export function RegisterChargerForm() {
 
             <div className="rounded-2xl border border-primary/30 bg-primary/[0.07] p-4 sm:p-5 space-y-3">
               <div>
-                <p className="text-sm uppercase tracking-wide text-primary font-headline font-bold">
-                  Your rate on the map (USD / kWh)
+                <p className="font-headline text-sm font-bold uppercase tracking-wide text-primary">
+                  Your rate on the map (USD per kWh)
                 </p>
-                <p className="mt-1 text-xs text-on-surface-variant leading-relaxed">
-                  Set what you charge per kilowatt-hour. This exact rate appears on your
-                  map pin and in the charger card so drivers can compare locations
-                  before starting a session.
+                <p className="mt-1 text-xs leading-relaxed text-on-surface-variant">
+                  Set what you charge per kilowatt hour. Drivers see this on your pin and
+                  in the charger card before they proceed to escrow.
                 </p>
               </div>
               <div className="flex flex-wrap items-end gap-3">
@@ -263,8 +265,8 @@ export function RegisterChargerForm() {
                       onChange={(e) => setPricePerKwh(Number(e.target.value))}
                       className="min-h-[3rem] flex-1 border-0 bg-transparent py-3 text-on-surface outline-none focus:ring-0"
                     />
-                    <span className="text-xs text-on-surface-variant whitespace-nowrap">
-                      / kWh
+                    <span className="whitespace-nowrap text-xs text-on-surface-variant">
+                      per kWh
                     </span>
                   </div>
                 </div>
@@ -288,7 +290,8 @@ export function RegisterChargerForm() {
               />
             </div>
             <p className="text-xs text-on-surface-variant/70">
-              Contact is only shared with verified drivers after payment.
+              Contact stays private until escrow related steps unlock handoff signals in
+              the app.
             </p>
 
             <div className="space-y-2 flex-1 flex flex-col min-h-0">
@@ -326,10 +329,10 @@ export function RegisterChargerForm() {
                 <p className="text-sm uppercase tracking-widest text-[#f0edf1]/70 font-headline font-bold">
                   Charger location
                 </p>
-                <p className="text-xs text-on-surface-variant/70 mt-0.5">
+                <p className="mt-0.5 text-xs text-on-surface-variant/70">
                   {mapboxReady
-                    ? "Click the map to set lat/lng"
-                    : "Map needs a Mapbox token in .env.local"}
+                    ? "Click the map to set coordinates."
+                    : "Map preview unavailable in this deployment."}
                 </p>
               </div>
             </div>
@@ -372,8 +375,8 @@ export function RegisterChargerForm() {
                           <p className="font-headline font-bold text-sm">
                             Pick your charger location
                           </p>
-                          <p className="text-xs text-on-surface-variant mt-1">
-                            Click anywhere on the map to set exact lat/lng.
+                          <p className="mt-1 text-xs text-on-surface-variant">
+                            Click anywhere on the map to set precise coordinates.
                           </p>
                         </div>
                       </div>
@@ -387,27 +390,19 @@ export function RegisterChargerForm() {
                   </span>
                   <div className="max-w-sm space-y-2">
                     <p className="font-headline font-bold text-error">
-                      Mapbox token missing
+                      Map unavailable
                     </p>
-                    <p className="text-sm text-on-surface-variant leading-relaxed">
-                      Add{" "}
-                      <code className="text-secondary text-xs whitespace-nowrap">
-                        NEXT_PUBLIC_MAPBOX_TOKEN
-                      </code>{" "}
-                      to{" "}
-                      <code className="text-secondary text-xs">.env.local</code>{" "}
-                      and restart{" "}
-                      <code className="text-secondary text-xs">npm run dev</code>
-                      . Then you can drop a pin here.
+                    <p className="text-sm leading-relaxed text-on-surface-variant">
+                      Hosted environments must enable interactive maps before you can pin
+                      a listing. Retry later or write{" "}
+                      <a
+                        href="mailto:info@m2m.energy"
+                        className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+                      >
+                        info@m2m.energy
+                      </a>{" "}
+                      if deployment staff should prioritize map enablement for your zone.
                     </p>
-                    <a
-                      href="https://account.mapbox.com/access-tokens/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block text-sm text-primary hover:underline"
-                    >
-                      Create a token (Mapbox)
-                    </a>
                   </div>
                 </div>
               )}

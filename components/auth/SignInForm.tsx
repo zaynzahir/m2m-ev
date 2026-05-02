@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { signInWithEmail } from "@/lib/supabase/client";
 
 type SignInFormProps = {
@@ -35,10 +36,15 @@ export function SignInForm({ nextHref }: SignInFormProps) {
         } else if (msg.includes("email not confirmed")) {
           setError("Please verify your email first, then sign in.");
         } else {
-          setError(err.message);
+          setError(
+            toSafeToastError(
+              err,
+              "Sign in failed. Try again or email info@m2m.energy.",
+            ),
+          );
         }
       } else {
-        setError("Sign in failed. Please try again.");
+        setError("Sign in failed. Try again or email info@m2m.energy.");
       }
     } finally {
       setSubmitting(false);
@@ -55,8 +61,8 @@ export function SignInForm({ nextHref }: SignInFormProps) {
           Sign in
         </h1>
         <p className="mt-3 text-sm text-on-surface-variant">
-          Use your email and password. Link a Solana wallet from Profile for
-          payments.
+          Email accounts need a confirmed inbox message before first sign in (check spam
+          too). Connect a Solana wallet from Profile when you start paid sessions.
         </p>
       </div>
 

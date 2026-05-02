@@ -7,12 +7,14 @@ import mapboxgl from "mapbox-gl";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import {
   createInitialChargerForCurrentAuth,
   resendSignupConfirmation,
   signUpWithEmail,
   updateAuthUserProfile,
 } from "@/lib/supabase/client";
+import { validateStrongPassword } from "@/lib/auth-password-policy";
 import { getPublicEnv, hasMapboxPublicToken } from "@/lib/env/public";
 import type { UserRole } from "@/lib/types/database";
 
@@ -31,15 +33,6 @@ const CHARGER_PLUG_OPTIONS = [
   "Level 2 240V",
   "Tesla Wall Connector",
 ] as const;
-
-function validateStrongPassword(password: string): string | null {
-  if (password.length < 12) return "Password must be at least 12 characters.";
-  if (!/[0-9]/.test(password)) return "Password must include at least one number.";
-  if (!/[^A-Za-z0-9]/.test(password)) {
-    return "Password must include at least one special character.";
-  }
-  return null;
-}
 
 export function SignUpForm({ nextHref }: SignUpFormProps) {
   const router = useRouter();
@@ -70,6 +63,7 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [needEmailConfirm, setNeedEmailConfirm] = useState(false);
   const [resending, setResending] = useState(false);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
 
   const passwordError = useMemo(() => validateStrongPassword(password), [password]);
 
@@ -155,7 +149,12 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
     try {
       await saveSignup();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign up failed.");
+      setError(
+        toSafeToastError(
+          err,
+          "Sign up did not finish. Refresh once or email info@m2m.energy.",
+        ),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -192,17 +191,36 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
           Account created successfully
         </p>
         <p className="mt-3 text-sm text-on-surface-variant">
-          Please check your email to verify your account. We sent a link to{" "}
-          <strong className="text-on-surface">{email}</strong>. After confirming,
-          sign in here or use the link from the email.
+          Check your inbox and spam folder for the verification email. We sent a link to{" "}
+          <strong className="text-on-surface">{email}</strong>. After you confirm,
+          sign in here or follow the email link within a few minutes of opening it so the
+          link stays fresh.
         </p>
+        {resendNotice ? (
+          <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-on-surface-variant">
+            {resendNotice}
+          </p>
+        ) : null}
         <button
           type="button"
           disabled={resending}
           onClick={() => {
+            setResendNotice(null);
             setResending(true);
             void resendSignupConfirmation(email.trim())
-              .catch(() => {})
+              .then(() => {
+                setResendNotice(
+                  "Another confirmation email was sent. Check inbox and spam.",
+                );
+              })
+              .catch((err: unknown) => {
+                setResendNotice(
+                  toSafeToastError(
+                    err,
+                    "Could not resend confirmation. Try again soon or email info@m2m.energy.",
+                  ),
+                );
+              })
               .finally(() => setResending(false));
           }}
           className="mt-6 font-bold text-secondary hover:underline disabled:opacity-50"

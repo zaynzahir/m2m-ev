@@ -42,6 +42,7 @@ export function SupportAndVehicles() {
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-on-surface-variant sm:text-base">
           Get help, then see which vehicles and chargers fit the network today.
+          For support, contact info@m2m.energy.
         </p>
       </div>
 

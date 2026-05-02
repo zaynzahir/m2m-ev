@@ -4,22 +4,22 @@ import { DocsSidebar } from "@/components/docs/DocsSidebar";
 import { JsonCodeBlock } from "@/components/docs/JsonCodeBlock";
 
 const SESSION_INIT_JSON = `{
-  "charger_id": "m2m_node_8841",
-  "session_token": "sess_9x8f2a1...",
-  "qr_proof_signature": "5Kj8f...Ed25519_sig",
-  "escrow_pubkey": "7xVp...SolanaAddress",
-  "hardware_status": "authorized_pending_plug",
+  "chargerId": "8841-live",
+  "sessionToken": "sess9x8f2a1",
+  "qrProofSignature": "5Kj8fEd25519",
+  "escrowPubkey": "7xVpSolana",
+  "workflowStatus": "authorizedPendingPlug",
   "timestamp": "2026-04-11T12:00:00Z"
 }`;
 
 const SETTLE_JSON = `{
-  "session_id": "sess_9x8f2a1...",
-  "charger_reported_kwh": 42.5,
-  "vehicle_reported_kwh": 41.8,
-  "delta_status": "within_tolerance",
-  "settlement_amount_usdc": 14.50,
-  "host_wallet": "Host...Address",
-  "driver_wallet": "Driver...Address"
+  "sessionId": "sess9x8f2a1",
+  "chargerReportedKwh": 42.5,
+  "vehicleReportedKwh": 41.8,
+  "deltaStatus": "withinTolerance",
+  "settlementAmountUsdc": 14.5,
+  "hostWallet": "HostAddress",
+  "driverWallet": "DriverAddress"
 }`;
 
 const NAV_ITEMS = [
@@ -58,13 +58,20 @@ export default function DocsPage() {
                   M2M Developer Documentation
                 </h1>
                 <p className="mt-4 max-w-3xl text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
-                  Reference for Anchor programs, the Dual-Verification Oracle, and
-                  client integration. Sections use URL anchors for deep linking (for
-                  example{" "}
+                  Reference for Solana escrow programs, the phased dual verification
+                  oracle, and API first client integration. Sections use URL anchors,
+                  for example{" "}
                   <code className="rounded-md bg-white/[0.06] px-1.5 py-0.5 font-mono text-[13px] text-primary/95">
                     /docs#smart-contracts
                   </code>
-                  ).
+                  . Questions:{" "}
+                  <a
+                    href="mailto:info@m2m.energy"
+                    className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+                  >
+                    info@m2m.energy
+                  </a>
+                  .
                 </p>
               </header>
 
@@ -74,13 +81,12 @@ export default function DocsPage() {
                 </h2>
                 <div className="mt-6 space-y-5 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
                   <p>
-                    Welcome to the M2M Developer Documentation. The M2M stack empowers
-                    developers, charger-cloud partners, and node operators to interface
-                    with the world&apos;s first Solana-native DePIN for
-                    machine-to-machine energy transfer. This documentation covers our
-                    on-chain Anchor programs, the Dual-Verification Oracle middleware,
-                    and the TypeScript SDK required to build client applications and
-                    integrate vehicle and charger APIs.
+                    Welcome to the M2M Developer Documentation. The M2M stack helps
+                    developers, charger cloud partners, and node operators integrate with
+                    a Solana native DePIN for machine to machine energy coordination.
+                    This covers escrow programs on chain, the dual verification oracle
+                    middleware roadmap, and the TypeScript oriented surface area for web
+                    clients and OEM or charger APIs.
                   </p>
                   <p>
                     The M2M project is{" "}
@@ -101,10 +107,11 @@ export default function DocsPage() {
                   Smart Contracts (Solana Escrow)
                 </h2>
                 <p className="mt-6 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
-                  The M2M protocol roadmap uses trustless smart contracts for session
-                  funding, verification, and settlement. Current V1 demonstrates the
-                  session lifecycle and escrow rails, while full production settlement
-                  logic continues through phased hardening and audits.
+                  The roadmap relies on deterministic Solana programs for session
+                  funding, verification cues, and settlement. Current V1 shows the
+                  session life cycle and escrow rails together with staged QR flows,
+                  while full oracle driven settlement completes through phased hardening
+                  and audits.
                 </p>
 
                 <h3 className="mt-10 font-headline text-lg font-bold text-on-surface sm:text-xl">
@@ -144,9 +151,8 @@ export default function DocsPage() {
                       initialize_escrow
                     </code>
                     <span className="text-on-surface-variant">
-                      {" "}
-                      — Locks the estimated USDC session cost from the driver&apos;s
-                      wallet.
+                      {": "}
+                      Locks the estimated USDC session stake from the driver wallet.
                     </span>
                   </li>
                   <li className="text-[15px] leading-[1.82] text-on-surface-variant sm:text-base">
@@ -154,9 +160,9 @@ export default function DocsPage() {
                       verify_presence
                     </code>
                     <span className="text-on-surface-variant">
-                      {" "}
-                      — Authenticates the physical QR code scan, securely linking the
-                      driver&apos;s cryptographic signature to the physical node.
+                      {": "}
+                      Records physical QR authorization and binds the signer to this
+                      listing before payment continuation.
                     </span>
                   </li>
                   <li className="text-[15px] leading-[1.82] text-on-surface-variant sm:text-base">
@@ -164,9 +170,9 @@ export default function DocsPage() {
                       settle_session
                     </code>
                     <span className="text-on-surface-variant">
-                      {" "}
-                      — Triggered by the Dual-Verification Oracle to release funds to
-                      the host and refund any unspent USDC to the driver.
+                      {": "}
+                      Target path for oracle authorized release of host payout and any
+                      driver refund once dual verification tolerances pass.
                     </span>
                   </li>
                   <li className="text-[15px] leading-[1.82] text-on-surface-variant sm:text-base">
@@ -174,8 +180,9 @@ export default function DocsPage() {
                       dispute_resolution
                     </code>
                     <span className="text-on-surface-variant">
-                      {" "}
-                      — Fallback mechanism for unmatched hardware and telematics reports.
+                      {": "}
+                      Fallback when charger cloud and vehicle reports disagree beyond
+                      policy tolerance during reconciliation.
                     </span>
                   </li>
                 </ul>
@@ -188,37 +195,37 @@ export default function DocsPage() {
                   API Integration Oracle (V2)
                 </h2>
                 <p className="mt-6 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
-                  The M2M Oracle is the target trust boundary between the physical
-                  world and the Solana blockchain. V1 currently ships staged QR +
-                  escrow workflow primitives, while OEM telemetry reconciliation is
-                  being integrated as a phased rollout.
+                  The oracle is the target trust boundary between measured energy and on
+                  chain settlement. V1 ships staged QR and escrow primitives first, while
+                  OEM and charger telemetry reconciliation lands in phased releases.
+                  Example payloads below are illustrative, not a guarantee of deployed
+                  routes or field names.
                 </p>
 
                 <h3 className="mt-10 font-headline text-lg font-bold text-on-surface sm:text-xl">
-                  1. Session initialization (Scan-to-Authenticate)
+                  1. Session initialization (scan to authenticate)
                 </h3>
                 <p className="mt-4 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
-                  When a driver scans the host&apos;s QR code, the client SDK requests
-                  session initialization and records workflow state. Hardware
-                  energization and direct charger-cloud authorization are part of the
-                  next integration phase.
+                  When a driver scans the host QR, the client records session intent and
+                  workflow state in app. Charger cloud authorization and automated
+                  energize flows arrive as partner APIs connect.
                 </p>
                 <JsonCodeBlock methodPath="POST /api/v2/oracle/session-init">
                   {SESSION_INIT_JSON}
                 </JsonCodeBlock>
 
                 <h3 className="mt-10 font-headline text-lg font-bold text-on-surface sm:text-xl">
-                  2. Dual-verification settlement payload
+                  2. Dual verification settlement payload
                 </h3>
                 <p className="mt-4 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
-                  In the target production architecture, settlement is authorized only
-                  when hardware output and vehicle intake remain within accepted
-                  physical loss tolerance (typically{" "}
+                  Production target authorizes payout only when charger reported and
+                  vehicle reported energy stay within accepted loss tolerance (often under
+                  about{" "}
                   <span className="font-headline font-semibold text-on-surface/90">
-                    &lt; 2%
+                    two percent
                   </span>
-                  ). V1 documents this schema and staged flow while live OEM/charger
-                  telemetry adapters continue rollout.
+                  ). V1 documents this shape while live OEM and charger adapters roll
+                  out.
                 </p>
                 <JsonCodeBlock methodPath="POST /api/v2/oracle/session-settle">
                   {SETTLE_JSON}
@@ -236,25 +243,27 @@ export default function DocsPage() {
                   <code className="rounded-md bg-white/[0.06] px-1.5 py-0.5 font-mono text-[13px] text-primary/95">
                     @m2m/sdk
                   </code>{" "}
-                  (npm) provides a unified interface for the entire session lifecycle,
-                  integrating seamlessly with{" "}
+                  npm package targets a unified interface for the session life cycle and
+                  is designed to work alongside{" "}
                   <code className="rounded-md bg-white/[0.06] px-1.5 py-0.5 font-mono text-[13px] text-primary/95">
                     @solana/wallet-adapter-react
                   </code>
-                  .
+                  . Availability timelines are announced on official channels.
                 </p>
                 <h3 className="mt-8 font-headline text-lg font-bold text-on-surface sm:text-xl">
-                  Installation &amp; configuration
+                  Installation and configuration
                 </h3>
                 <p className="mt-4 text-[15px] leading-[1.85] text-on-surface-variant sm:text-base">
-                  The package handles wallet signing, RPC connections, and WebSocket
-                  subscriptions to the Oracle for real-time charging status. Configure
-                  your Solana RPC (Devnet for V1), wallet adapter, and Oracle base URL
-                  via your environment variables. Full installation steps, React hooks (
-                  <code className="font-mono text-[13px] text-primary/90">
-                    useM2MSession
-                  </code>
-                  ), and boilerplate examples will ship with the public beta release.
+                  Expect wallet signing helpers, RPC configuration, and event updates for
+                  session status once the SDK is published publicly. Until then reference
+                  the open application code and docs for patterns. Reach out at{" "}
+                  <a
+                    href="mailto:info@m2m.energy"
+                    className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+                  >
+                    info@m2m.energy
+                  </a>{" "}
+                  for integration questions.
                 </p>
               </section>
             </article>

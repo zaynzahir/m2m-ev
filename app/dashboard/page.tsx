@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { hasSupabasePublicConfig } from "@/lib/env/public";
 import {
   fetchDashboardIdentity,
@@ -31,32 +32,20 @@ function fmtSessionId(id: string) {
 }
 
 function fmtDate(iso: string | null) {
-  if (!iso) return "—";
+  if (!iso) return "None yet";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "None yet";
   return d.toLocaleString();
 }
 
 function shortWallet(address: string | null) {
-  if (!address) return "—";
+  if (!address) return "Not connected";
   if (address.length <= 14) return address;
   return `${address.slice(0, 6)}…${address.slice(-6)}`;
 }
 
 function toSafeDashboardError(e: unknown): string {
-  const msg = e instanceof Error ? e.message : "Failed to load dashboard.";
-  const lower = msg.toLowerCase();
-  if (
-    lower.includes("lock:") ||
-    lower.includes("lock broken by another request") ||
-    lower.includes("steal option")
-  ) {
-    return "Dashboard sync is busy. Please refresh once, or close duplicate tabs.";
-  }
-  if (lower.includes("jwt") || lower.includes("token")) {
-    return "Session check failed. Please sign in again.";
-  }
-  return msg;
+  return toSafeToastError(e, "Failed to load dashboard. Please refresh once.");
 }
 
 function displayChargerOperationalStatus(c: ChargerRow): string {
@@ -67,7 +56,7 @@ function displayChargerOperationalStatus(c: ChargerRow): string {
 
 function formatOutput(c: ChargerRow): string {
   const p = c.plug_type?.trim();
-  if (!p) return "Level 2 —";
+  if (!p) return "Level 2 (type TBD)";
   if (/level/i.test(p) || /v$/i.test(p)) return p;
   return `Level 2 ${p}`;
 }
@@ -132,7 +121,7 @@ function ComingSoonCard({ title, detail }: { title: string; detail: string }) {
           </span>
         </div>
         <p className="mt-3 font-headline text-xl font-extrabold tracking-tight text-on-surface-variant">
-          —
+          Coming
         </p>
         <p className="mt-3 text-xs leading-relaxed text-on-surface-variant">{detail}</p>
       </div>
@@ -173,7 +162,7 @@ function SessionTable({
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-on-surface-variant">
-                  {roleLabel} · Settlement{" "}
+                  {roleLabel}, settlement{" "}
                   <span className="font-mono font-bold text-primary">{fmtSol(s.amount_sol)}</span>
                 </p>
               </div>
@@ -212,8 +201,8 @@ function SessionTable({
                   <td className="px-6 py-4 font-headline text-xs font-semibold text-on-surface">
                     {roleLabel}
                   </td>
-                  <td className="px-6 py-4 tabular-nums text-on-surface-variant">—</td>
-                  <td className="px-6 py-4 font-mono text-xs text-on-surface-variant">—</td>
+                  <td className="px-6 py-4 tabular-nums text-on-surface-variant">Not yet</td>
+                  <td className="px-6 py-4 font-mono text-xs text-on-surface-variant">Not yet</td>
                   <td className="px-6 py-4 font-mono text-xs font-bold text-primary">
                     {fmtSol(s.amount_sol)}
                   </td>
@@ -383,7 +372,7 @@ export default function DashboardPage() {
   const showHost = role === "host" || role === "both";
 
   const identitySubtitle = useMemo(() => {
-    if (role === "both") return "Driver + Host view";
+    if (role === "both") return "Driver and host view";
     if (role === "host") return "Host view";
     return "Driver view";
   }, [role]);
@@ -401,7 +390,16 @@ export default function DashboardPage() {
               Node Command Center
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-on-surface-variant sm:mt-4 sm:text-base">
-              Role-aware telemetry, settlement metrics, and charging operations across your M2M activity.
+              Role aware views of settlement metrics and your M2M activity. Telemetry from OEM and charger APIs will surface here as integrations go live.
+            </p>
+            <p className="mt-2 max-w-3xl text-xs leading-relaxed text-on-surface-variant sm:text-sm">
+              Support:{" "}
+              <a
+                href="mailto:info@m2m.energy"
+                className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+              >
+                info@m2m.energy
+              </a>
             </p>
           </header>
 
@@ -417,7 +415,7 @@ export default function DashboardPage() {
                 <GradientPanel>
                   <div className="space-y-4 px-6 py-6 md:px-8">
                     <p className="text-sm leading-relaxed text-on-surface-variant">
-                      Dashboard is available without wallet connection. Connect wallet when you want to start paid sessions and on-chain settlement.
+                      Dashboard is available without wallet connection. Connect wallet when you want to start paid sessions and on chain settlement.
                     </p>
                     <div className="flex justify-start">
                       <WalletConnectButton variant="primary" />
@@ -513,13 +511,13 @@ export default function DashboardPage() {
                     Upcoming metrics
                   </h2>
                   <p className="font-headline text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
-                    Real data-first roadmap
+                    Real data first roadmap
                   </p>
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
                   <ComingSoonCard
                     title="Energy dispensed"
-                    detail="kWh telemetry surfaces when oracle-linked energy reports are attached to sessions."
+                    detail="kWh telemetry surfaces when oracle linked energy reports are attached to sessions."
                   />
                   <ComingSoonCard
                     title="Active escrow locks"
@@ -557,7 +555,7 @@ export default function DashboardPage() {
                               >
                                 <p className="font-headline text-sm font-bold text-on-surface">{title}</p>
                                 <p className="mt-1 text-xs text-on-surface-variant">
-                                  {formatOutput(c)} · ${Number(c.price_per_kwh).toFixed(2)}/kWh
+                                  {formatOutput(c)}, ${Number(c.price_per_kwh).toFixed(2)} per kWh
                                 </p>
                                 <div className="mt-2 flex items-center justify-between gap-2">
                                   <span className="inline-flex rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 font-headline text-[10px] font-bold text-secondary/95">
@@ -609,7 +607,7 @@ export default function DashboardPage() {
                                   <td className="px-6 py-4 font-medium text-on-surface md:px-8">{title}</td>
                                   <td className="px-6 py-4 text-on-surface-variant">{formatOutput(c)}</td>
                                   <td className="px-6 py-4 tabular-nums text-on-surface">
-                                    ${Number(c.price_per_kwh).toFixed(2)} / kWh
+                                    ${Number(c.price_per_kwh).toFixed(2)} per kWh
                                   </td>
                                   <td className="px-6 py-4">
                                     <span className="inline-flex rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-headline text-[11px] font-bold text-secondary/95">
@@ -649,7 +647,7 @@ export default function DashboardPage() {
                       Driver sessions
                     </h2>
                     <p className="font-headline text-[10px] font-bold uppercase tracking-[0.2em] text-primary/90">
-                      Ledger · spending trail
+                      Ledger spending trail
                     </p>
                   </div>
                   <SessionTable
@@ -667,7 +665,7 @@ export default function DashboardPage() {
                       Host sessions
                     </h2>
                     <p className="font-headline text-[10px] font-bold uppercase tracking-[0.2em] text-primary/90">
-                      Ledger · earnings trail
+                      Ledger earnings trail
                     </p>
                   </div>
                   <SessionTable

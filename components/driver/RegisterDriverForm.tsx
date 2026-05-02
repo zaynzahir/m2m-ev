@@ -4,6 +4,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { getPublicEnv } from "@/lib/env/public";
 import { upsertDriverProfile } from "@/lib/supabase/client";
 import { VEHICLE_BRAND_MODELS } from "@/lib/vehicle-catalog";
@@ -66,7 +67,10 @@ export function RegisterDriverForm() {
     } catch (e) {
       showToast(
         "error",
-        e instanceof Error ? e.message : "Failed to save driver profile.",
+        toSafeToastError(
+          e,
+          "We could not save your driver profile. Refresh once or email info@m2m.energy if it continues.",
+        ),
       );
     } finally {
       setSubmitting(false);
@@ -86,9 +90,10 @@ export function RegisterDriverForm() {
           <h1 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mt-2">
             Register Your Driver Profile
           </h1>
-          <p className="text-on-surface-variant text-base sm:text-lg leading-relaxed mt-3 max-w-2xl">
-            Connect your wallet so you can start charging sessions with verified
-            hosts.
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-on-surface-variant sm:text-lg">
+            Connect your Solana wallet to save driver details. Paid sessions unlock from
+            the map flow using escrow rules you approve when signing. Charger and vehicle
+            cloud APIs deepen verification over time.
           </p>
         </div>
 
@@ -99,7 +104,7 @@ export function RegisterDriverForm() {
                 htmlFor="driver-alias"
                 className="text-sm uppercase tracking-wide text-[#f0edf1]/70 font-headline font-bold block"
               >
-                First Name / Alias
+                Preferred name or alias
               </label>
               <input
                 id="driver-alias"
@@ -116,8 +121,9 @@ export function RegisterDriverForm() {
                 <p className="text-sm uppercase tracking-wide text-[#f0edf1]/70 font-headline font-bold">
                   Your vehicle
                 </p>
-                <p className="text-xs text-on-surface-variant/80 mt-1">
-                  Pick brand, then model (EVs we support only).
+                <p className="mt-1 text-xs text-on-surface-variant/80">
+                  Choose brand then model from the catalog aligned to our integrations
+                  page.
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -206,16 +212,25 @@ export function RegisterDriverForm() {
           </div>
 
           <aside className="lg:sticky lg:top-28 space-y-3">
-            <div className="rounded-2xl border border-white/10 bg-surface-container-low/20 p-5 sm:p-6 h-full">
-              <p className="text-sm text-on-surface-variant leading-relaxed">
-                Wallet first onboarding for drivers. Your profile is stored in
-                Supabase and used to personalize session flow.
+            <div className="h-full rounded-2xl border border-white/10 bg-surface-container-low/20 p-5 sm:p-6">
+              <p className="text-sm leading-relaxed text-on-surface-variant">
+                Profiles tie your wallet to vehicle selections and cautious contact hints
+                for hosts when sessions advance. Telemetry from OEM clouds will layer in
+                on later releases.
               </p>
-              <div className="mt-4 pt-4 border-t border-white/10 text-xs text-on-surface-variant/70 flex items-start gap-2">
-                <span className="material-symbols-outlined text-primary text-lg shrink-0">
-                  verified
+              <div className="mt-4 flex items-start gap-2 border-t border-white/10 pt-4 text-xs text-on-surface-variant/70">
+                <span className="material-symbols-outlined shrink-0 text-lg text-primary">
+                  mail
                 </span>
-                <span>RLS policies allow MVP inserts/updates for this demo.</span>
+                <span>
+                  Account help{" "}
+                  <a
+                    href="mailto:info@m2m.energy"
+                    className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+                  >
+                    info@m2m.energy
+                  </a>
+                </span>
               </div>
             </div>
           </aside>

@@ -38,8 +38,7 @@ export function RoleCards() {
               </h2>
               <p className="text-base leading-relaxed text-on-surface-variant sm:text-lg">
                 Connect your Solana wallet, locate a nearby M2M host, lock your
-                payment in our Escrow Smart Contract, and plug in. No
-                subscriptions, no hidden fees.
+                payment in escrow, and plug in. Clear pricing and no hidden fees.
               </p>
               <button
                 type="button"
@@ -65,9 +64,9 @@ export function RoleCards() {
                 I have a charger.
               </h2>
               <p className="text-base leading-relaxed text-on-surface-variant sm:text-lg">
-                List your home EV charger on the M2M network. Our Oracle
-                verifies the energy dispensed, and our Solana Smart Contract
-                streams USDC directly to your wallet.
+                List your home EV charger on the M2M network. In this version,
+                session authorization and escrow are live. Full automated charger
+                and vehicle API telemetry is rolling out in phases.
               </p>
               <button
                 type="button"

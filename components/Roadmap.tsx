@@ -12,7 +12,7 @@ export function Roadmap() {
           <h3 className="font-headline text-2xl font-bold">The MVP (Current)</h3>
           <p className="text-on-surface-variant leading-relaxed">
             Web App launch, Solana Devnet Escrow Smart Contract deployed, Mapbox
-            integration, and local Beta testing in New York.
+            integration, and local beta testing in New York.
           </p>
           <div className="flex items-center gap-2 text-primary">
             <span
@@ -30,8 +30,8 @@ export function Roadmap() {
           </span>
           <h3 className="font-headline text-2xl font-bold">API &amp; Mobile</h3>
           <p className="text-on-surface-variant leading-relaxed">
-            Integration with existing Smart Charger APIs (ChargePoint, Wallbox)
-            for automated oracle data. M2M iOS and Android app release.
+            Integration with existing smart charger and vehicle APIs for
+            automated telemetry, plus M2M iOS and Android app release.
           </p>
           <div className="flex items-center gap-2 text-on-surface-variant/50">
             <span className="material-symbols-outlined text-sm">schedule</span>
@@ -45,11 +45,11 @@ export function Roadmap() {
             Phase 3
           </span>
           <h3 className="font-headline text-2xl font-bold">
-            Hardware &amp; Scaling
+            Scaling and Partner Expansion
           </h3>
           <p className="text-on-surface-variant leading-relaxed">
-            Launch of custom M2M DePIN Smart Plugs. Global rollout and onboarding
-            of autonomous robotic fleets and delivery bots.
+            Global rollout, partner onboarding, and broader machine energy use
+            cases after API integrations mature across regions.
           </p>
           <div className="flex items-center gap-2 text-on-surface-variant/30">
             <span className="material-symbols-outlined text-sm">

@@ -10,6 +10,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { GridRoleModal } from "@/components/auth/GridRoleModal";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { HostChargerManager } from "@/components/profile/HostChargerManager";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import {
   deleteCurrentAccount,
   linkWalletToAuthProfile,
@@ -64,7 +65,10 @@ export default function ProfilePage() {
         if (!cancelled) {
           setWalletSyncing(false);
           setWalletSyncError(
-            e instanceof Error ? e.message : "Could not link wallet to your profile.",
+            toSafeToastError(
+              e,
+              "Could not link wallet to your profile. Refresh once or email info@m2m.energy.",
+            ),
           );
         }
       }
@@ -112,7 +116,10 @@ export default function ProfilePage() {
       window.location.assign("/");
     } catch (e) {
       setDeleteAccountError(
-        e instanceof Error ? e.message : "Could not delete your account.",
+        toSafeToastError(
+          e,
+          "Could not complete account deletion. Email info@m2m.energy if you need help.",
+        ),
       );
     } finally {
       setDeletingAccount(false);
@@ -176,9 +183,10 @@ export default function ProfilePage() {
                           })
                           .catch((e) => {
                             setVerifyNotice(
-                              e instanceof Error
-                                ? e.message
-                                : "Could not resend confirmation.",
+                              toSafeToastError(
+                                e,
+                                "Could not resend confirmation. Try again soon or email info@m2m.energy.",
+                              ),
                             );
                           })
                           .finally(() => setResendingVerify(false));

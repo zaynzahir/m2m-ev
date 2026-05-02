@@ -34,15 +34,15 @@ function Money({
 const architecturePillars = [
   {
     title: "Proof of Presence",
-    body: "Sessions are initiated via a physical QR-code handshake at the location, preventing GPS spoofing and ensuring the driver is physically at the node.",
+    body: "Sessions are initiated via a physical QR code handshake at the location to deter spoofing and confirm the driver is at the node before payment flow proceeds.",
   },
   {
-    title: "Dual-Verification Oracle",
-    body: "Once a session begins, the protocol does not rely on a single source of truth. Our oracle reconciles charger-cloud telemetry and event APIs with the driver's vehicle OEM telemetry APIs.",
+    title: "Dual verification oracle",
+    body: "The direction of travel compares charger cloud telemetry with vehicle OEM telemetry in a phased model. Early releases pair QR proof of presence with escrow while API reconciliation hardens settlement logic.",
   },
   {
-    title: "Trustless Escrow",
-    body: "USDC is locked in a Solana smart contract prior to charging. When reconciliation and session rules pass, proportionate payment is released to the host and any excess is returned to the driver.",
+    title: "Solana escrow",
+    body: "Funds are routed through Solana escrow using shared session rules so hosts and drivers have clear milestones for lock, charge, release, or refund stages as metering and integrations mature.",
   },
 ] as const;
 
@@ -51,42 +51,42 @@ const roadmapPhases = [
     title: "Phase 1: Foundation, Security, and Mainnet Beta",
     items: [
       {
-        label: "Legal & Compliance",
-        text: "Establish the formal legal wrapper/entity required to operate an API-integrated decentralized energy coordination network.",
+        label: "Legal and Compliance",
+        text: "Establish the formal legal wrapper or entity required to operate an API integrated decentralized energy coordination network.",
       },
       {
         label: "Smart Contract Audits",
-        text: "Comprehensive third-party security audits of the M2M Solana escrow programs to ensure total protection of user funds.",
+        text: "Comprehensive third party security audits of the M2M Solana escrow programs to protect user funds.",
       },
       {
         label: "Mainnet Migration",
-        text: "Transitioning the core escrow and session-mapping infrastructure from devnet to Solana Mainnet-Beta for a closed beta pilot.",
+        text: "Transitioning the core escrow and session coordination infrastructure from devnet to Solana Mainnet Beta for a closed beta pilot.",
       },
     ],
   },
   {
-    title: "Phase 2: API Oracle & Protocol Middleware",
+    title: "Phase 2: API Oracle and Protocol Middleware",
     items: [
       {
-        label: "OEM & Telemetry Integrations",
-        text: "Building out the secure API pipelines to pull real-time vehicle data directly from major EV manufacturers.",
+        label: "OEM and Telemetry Integrations",
+        text: "Building out the secure API pipelines to pull real time vehicle data directly from major EV manufacturers.",
       },
       {
         label: "Charger Middleware",
-        text: "Expanding software bridges to charger-cloud APIs and network providers, enabling standard Level 2 / Level 3 infrastructure without custom hardware dependency.",
+        text: "Expanding software bridges to charger cloud APIs and network providers, enabling standard Level 2 and Level 3 infrastructure without custom hardware dependency.",
       },
       {
         label: "Oracle Deployment",
-        text: "Launching staged Dual-Verification Oracle automation for reconciliation and payment release using API-fed telemetry.",
+        text: "Launching staged dual verification oracle automation for reconciliation and payment release using API sourced telemetry.",
       },
     ],
   },
   {
-    title: "Phase 3: Consumer Scale & Mobile Clients",
+    title: "Phase 3: Consumer Scale and Mobile Clients",
     items: [
       {
         label: "Native Mobile Applications",
-        text: "Launching polished iOS and Android clients optimized for fast, in-car use, featuring native Solana wallet integrations.",
+        text: "Launching polished iOS and Android clients optimized for fast in car use, featuring native Solana wallet integrations.",
       },
       {
         label: "Host Onboarding Scaling",
@@ -94,7 +94,7 @@ const roadmapPhases = [
       },
       {
         label: "Protocol Decentralization",
-        text: "Beginning the process of decentralizing the oracle nodes to ensure the network remains censorship-resistant and robust.",
+        text: "Beginning the process of decentralizing the oracle nodes to ensure the network remains censorship resistant and robust.",
       },
     ],
   },
@@ -124,7 +124,14 @@ export default function WhitepaperPage() {
                 </p>
                 <p className="mx-auto mt-8 max-w-lg text-[13px] leading-relaxed text-on-surface-variant/80">
                   Confidential draft for ecosystem review. Technical and economic
-                  specifications align with the M2M protocol roadmap.
+                  specifications align with the M2M protocol roadmap. Ecosystem contact:{" "}
+                  <a
+                    href="mailto:info@m2m.energy"
+                    className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+                  >
+                    info@m2m.energy
+                  </a>
+                  .
                 </p>
               </header>
 
@@ -139,8 +146,8 @@ export default function WhitepaperPage() {
                     massive gap between accelerating EV adoption and lagging public
                     infrastructure. By transforming idle residential and commercial
                     charging stations into permissionless, monetizable nodes, M2M
-                    unlocks a global, peer-to-peer energy grid. We facilitate
-                    trust-minimized charging sessions routed through on-chain escrow
+                    unlocks a global peer to peer energy grid. We facilitate
+                    trust minimized charging sessions routed through on chain escrow
                     rails. We are seeking a{" "}
                     <Money>$100,000 USD</Money> ecosystem grant to transition our V1
                     architecture from devnet to mainnet, finalize our legal entity
@@ -149,13 +156,13 @@ export default function WhitepaperPage() {
                   </p>
                   <p className="!mt-5 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
                     <strong className="font-semibold text-on-surface">
-                      Open source:
+                      Open source
                     </strong>{" "}
                     M2M is developed in the open: the application and protocol
                     reference implementations are released (or will be released)
-                    under an open-source license, with public repositories linked
+                    under an open source license, with public repositories linked
                     from official channels as they are published. This grant proposal
-                    and the developer documentation describe the same public-facing
+                    and the developer documentation describe the same public facing
                     architecture.
                   </p>
                 </section>
@@ -164,18 +171,18 @@ export default function WhitepaperPage() {
 
                 <section>
                   <h2 className="!mt-0 !mb-6 border-b border-white/[0.06] pb-4 font-headline text-xl font-bold tracking-tight text-on-surface sm:text-2xl md:!mb-8 md:text-[1.375rem] md:leading-snug">
-                    Why Solana? The Micro-Transaction Imperative
+                    Why Solana? The micro transaction imperative
                   </h2>
                   <p className="!mt-0 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
-                    Machine-scale energy transfer requires an economic environment that
-                    legacy payment rails cannot support. Traditional gateways charge
-                    flat base fees that make micro-charging economically unviable for
+                    Machine scale energy transfer benefits from an economic environment that
+                    legacy payment rails rarely support well. Traditional gateways charge
+                    flat base fees that make micro charging economically unviable for
                     hosts. Solana is one of the few networks capable of handling our
-                    required throughput with sub-second finality and transaction fees
+                    required throughput with fast finality and fees
                     well below{" "}
                     <Money>$0.01</Money>. By utilizing Solana, M2M replaces opaque
-                    payment processors with trustless escrow and instant, cross-border
-                    USDC settlement—ensuring hosts keep exactly what they earn.
+                    payment processors with programmable escrow and near instant cross border
+                    USDC settlement, helping hosts retain more of each session.
                   </p>
                 </section>
 
@@ -183,17 +190,17 @@ export default function WhitepaperPage() {
 
                 <section>
                   <h2 className="!mt-0 !mb-6 border-b border-white/[0.06] pb-4 font-headline text-xl font-bold tracking-tight text-on-surface sm:text-2xl md:!mb-8 md:text-[1.375rem] md:leading-snug">
-                    Architecture &amp; The Dual-Verification Oracle
+                    Architecture and the dual verification oracle
                   </h2>
                   <p className="!mt-0 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
-                    The integrity of the M2M protocol relies on absolute data accuracy
-                    without human intervention. Our architecture utilizes a unique
-                    Dual-Verification Oracle paired with physical Proof of Presence:
+                    The integrity of M2M depends on accurate metering and deterministic
+                    settlement rules rather than discretionary manual calls. Our design
+                    pairs a phased dual verification oracle with physical Proof of Presence.
                   </p>
                   <p className="!mt-5 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
-                    Current V1 demonstrates staged QR-authenticated session flow and
-                    escrow lifecycle foundations. Full live OEM + charger telemetry
-                    reconciliation is being integrated as the next protocol phase.
+                    Current V1 demonstrates staged QR authenticated session flow and
+                    escrow life cycle foundations. Full live OEM and charger telemetry
+                    reconciliation is integrated as the next protocol phase.
                   </p>
                   <div className="not-prose my-10 space-y-5">
                     {architecturePillars.map((pillar) => (
@@ -216,7 +223,7 @@ export default function WhitepaperPage() {
 
                 <section>
                   <h2 className="!mt-0 !mb-6 border-b border-white/[0.06] pb-4 font-headline text-xl font-bold tracking-tight text-on-surface sm:text-2xl md:!mb-8 md:text-[1.375rem] md:leading-snug">
-                    Grant Deployment &amp; Engineering Roadmap
+                    Grant deployment and engineering roadmap
                   </h2>
                   <p className="!mt-0 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
                     To realize the DePIN vision, our roadmap is structured into three

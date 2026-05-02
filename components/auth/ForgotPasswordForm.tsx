@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { requestPasswordResetEmail } from "@/lib/supabase/client";
 
 export function ForgotPasswordForm() {
@@ -19,7 +20,12 @@ export function ForgotPasswordForm() {
       await requestPasswordResetEmail(email.trim());
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Request failed.");
+      setError(
+        toSafeToastError(
+          err,
+          "Request did not send. Try again or email info@m2m.energy.",
+        ),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -32,8 +38,16 @@ export function ForgotPasswordForm() {
           Check your email
         </p>
         <p className="mt-3 text-sm text-on-surface-variant">
-          If an account exists for that address, we sent a reset link. You can
-          close this tab.
+          If an account exists for that address, we sent a reset link. Check inbox and
+          spam, then tap the link soon so your recovery session stays valid. Still stuck
+          after a few minutes?{" "}
+          <a
+            href="mailto:info@m2m.energy"
+            className="font-bold text-primary underline"
+          >
+            info@m2m.energy
+          </a>
+          .
         </p>
         <Link
           href="/auth/sign-in"
@@ -52,7 +66,15 @@ export function ForgotPasswordForm() {
           Reset password
         </h1>
         <p className="mt-3 text-sm text-on-surface-variant">
-          We will email you a link to choose a new password.
+          We email you a secure reset link. Use it soon after it arrives so recovery stays
+          active. Check spam if you do not see it. Support{" "}
+          <a
+            href="mailto:info@m2m.energy"
+            className="font-bold text-primary underline"
+          >
+            info@m2m.energy
+          </a>
+          .
         </p>
       </div>
       <div className="glass-card rounded-[2rem] border border-white/10 p-8 shadow-2xl">

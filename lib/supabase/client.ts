@@ -101,6 +101,35 @@ function optionalAge(value: unknown): number | null {
   return null;
 }
 
+/**
+ * App origin without path or stray trailing slashes/backslashes — used for Auth redirect_to /
+ * emailRedirectTo so confirmation and reset links stay clean and Supabase redirect allowlists match.
+ */
+function canonicalSiteOrigin(): string {
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+  let raw = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
+  raw = raw.replace(/[\\/]+$/u, "");
+  if (!raw) return "";
+  if (!/^https?:\/\//i.test(raw)) {
+    raw = `https://${raw.replace(/^[\\/]+/, "")}`;
+  }
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return raw;
+  }
+}
+
+function siteUrl(pathWithLeadingSlash: string): string {
+  const base = canonicalSiteOrigin();
+  const path = pathWithLeadingSlash.startsWith("/")
+    ? pathWithLeadingSlash
+    : `/${pathWithLeadingSlash}`;
+  return `${base}${path}`;
+}
+
 export async function signOutAll(): Promise<void> {
   const supabase = getSupabaseBrowserClient();
   await supabase.auth.signOut();
@@ -131,6 +160,7 @@ export async function signUpWithEmail(
     email,
     password,
     options: {
+      emailRedirectTo: siteUrl("/auth/callback"),
       data: {
         role,
         display_name: profileInput?.displayName?.trim() || null,
@@ -244,17 +274,15 @@ export async function signInWithOAuthProvider(
   redirectPath = "/auth/callback",
 ): Promise<void> {
   const supabase = getSupabaseBrowserClient();
-  const origin =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_SITE_URL ?? "";
-  if (!origin) {
+  const base = canonicalSiteOrigin();
+  if (!base) {
     throw new Error("Set NEXT_PUBLIC_SITE_URL for server OAuth redirects.");
   }
+  const path = redirectPath.startsWith("/") ? redirectPath : `/${redirectPath}`;
   const { error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${origin}${redirectPath.startsWith("/") ? "" : "/"}${redirectPath}`,
+      redirectTo: `${base}${path}`,
     },
   });
   if (error) throw error;
@@ -262,12 +290,8 @@ export async function signInWithOAuthProvider(
 
 export async function requestPasswordResetEmail(email: string): Promise<void> {
   const supabase = getSupabaseBrowserClient();
-  const origin =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-    redirectTo: `${origin}/auth/update-password`,
+    redirectTo: siteUrl("/auth/update-password"),
   });
   if (error) throw error;
 }
@@ -283,6 +307,9 @@ export async function resendSignupConfirmation(email: string): Promise<void> {
   const { error } = await supabase.auth.resend({
     type: "signup",
     email: email.trim(),
+    options: {
+      emailRedirectTo: siteUrl("/auth/callback"),
+    },
   });
   if (error) throw error;
 }

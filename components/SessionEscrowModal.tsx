@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { useEscrowSwapPayment } from "@/hooks/useEscrowSwapPayment";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { getEscrowPublicKey } from "@/lib/constants/escrow";
 import { hasSupabasePublicConfig } from "@/lib/env/public";
 import {
@@ -90,9 +91,12 @@ export function SessionEscrowModal({
       setPhase("charging");
       onSessionConfirmed?.();
     } catch (e) {
-      const msg =
-        e instanceof Error ? e.message : "Transaction failed. Try again.";
-      setErrorMessage(msg);
+      setErrorMessage(
+        toSafeToastError(
+          e,
+          "Payment step did not complete. Retry or approve in your wallet again. Questions: info@m2m.energy",
+        ),
+      );
       setPhase("error");
     }
   }, [
@@ -240,8 +244,9 @@ export function SessionEscrowModal({
                 </p>
                 {phase === "charging" ? (
                   <p className="text-center text-xs text-on-surface-variant">
-                    Escrow payment confirmed. Session intent marked charging; charger
-                    status updated in Supabase. Energy reconciliation APIs plug in later.
+                    Escrow payment confirmed and session is marked as charging.
+                    This is the current MVP flow; full automated telemetry/reconciliation
+                    will be added in the next phase.
                   </p>
                 ) : null}
               </div>

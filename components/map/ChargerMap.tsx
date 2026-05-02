@@ -23,6 +23,7 @@ import { SessionEscrowModal } from "@/components/SessionEscrowModal";
 
 import { ChargerSessionPreviewModal } from "./ChargerSessionPreviewModal";
 import { HostQrScanModal } from "./HostQrScanModal";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { accuracyCirclePolygon } from "@/lib/geo/accuracyCircle";
 import { nearestCharger } from "@/lib/geo/haversine";
 import {
@@ -98,6 +99,14 @@ function ringRadiusM(accuracy: number | null): number | null {
   return Math.min(accuracy, 5000);
 }
 
+function googleDirectionsUrl(lat: number, lng: number): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+}
+
+function appleDirectionsUrl(lat: number, lng: number): string {
+  return `https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+}
+
 export function ChargerMap() {
   const searchParams = useSearchParams();
   const { mapboxToken } = getPublicEnv();
@@ -117,7 +126,13 @@ export function ChargerMap() {
   const [activeIntentId, setActiveIntentId] = useState<string | null>(null);
   const [activeHostHasPayoutWallet, setActiveHostHasPayoutWallet] = useState<boolean>(true);
   const [toast, setToast] = useState<string | null>(null);
-  const [sessionStartedOpen, setSessionStartedOpen] = useState(false);
+  const [directionsPicker, setDirectionsPicker] = useState<{
+    lat: number;
+    lng: number;
+    title: string;
+  } | null>(null);
+  const [awaitingReturnFromMaps, setAwaitingReturnFromMaps] = useState(false);
+  const [arrivalHint, setArrivalHint] = useState<string | null>(null);
   const qrAutoOpenHandledRef = useRef(false);
 
   /** After first driver GPS sync, avoid re-flying / re-selecting on every tick. */
@@ -128,7 +143,9 @@ export function ChargerMap() {
   const loadChargers = useCallback(async () => {
     if (!hasSupabaseEnv) {
       setLoading(false);
-      setLoadError("Supabase env vars are not configured.");
+      setLoadError(
+        "Listing data cannot load in this deployment yet. Refresh once or email info@m2m.energy.",
+      );
       return;
     }
 
@@ -139,7 +156,10 @@ export function ChargerMap() {
       setLoadError(null);
     } catch (e) {
       setLoadError(
-        e instanceof Error ? e.message : "Could not load chargers.",
+        toSafeToastError(
+          e,
+          "Could not load chargers. Refresh once or email info@m2m.energy.",
+        ),
       );
     } finally {
       setLoading(false);
@@ -271,6 +291,22 @@ export function ChargerMap() {
     const t = window.setTimeout(() => setToast(null), 6000);
     return () => window.clearTimeout(t);
   }, [toast]);
+
+  useEffect(() => {
+    if (!awaitingReturnFromMaps) return;
+    const onFocus = () => {
+      setArrivalHint("Arrived at the charger? Tap Start Session to continue.");
+      setAwaitingReturnFromMaps(false);
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [awaitingReturnFromMaps]);
+
+  useEffect(() => {
+    if (!arrivalHint) return;
+    const t = window.setTimeout(() => setArrivalHint(null), 7000);
+    return () => window.clearTimeout(t);
+  }, [arrivalHint]);
 
   const primaryUserDot = driverPosition ?? (!isDriver ? locatePreview : null);
 
@@ -455,6 +491,16 @@ export function ChargerMap() {
           </div>
         ) : null}
 
+        {arrivalHint ? (
+          <div
+            className="absolute bottom-[max(3.6rem,env(safe-area-inset-bottom,0px))] left-1/2 z-20 max-w-[min(24rem,calc(100%-2rem))] -translate-x-1/2 rounded-xl border border-primary/35 bg-[#063224]/95 px-3 py-2.5 text-center text-xs text-[#d8ffef] shadow-xl backdrop-blur-md sm:bottom-24 sm:max-w-md sm:px-4 sm:py-3 sm:text-sm"
+            role="status"
+            aria-live="polite"
+          >
+            {arrivalHint}
+          </div>
+        ) : null}
+
         <div className="absolute bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))] left-3 right-3 z-10 rounded-2xl border border-white/10 bg-surface-container-highest/85 p-4 shadow-2xl backdrop-blur-md transition-all hover:-translate-y-1 sm:bottom-8 sm:left-8 sm:right-8 sm:p-6 md:right-auto md:w-96">
           {displayCharger ? (
             <>
@@ -483,6 +529,22 @@ export function ChargerMap() {
                   ${Number(displayCharger.price_per_kwh).toFixed(2)} / kWh
                 </span>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setDirectionsPicker({
+                    lat: displayCharger.lat,
+                    lng: displayCharger.lng,
+                    title: displayCharger.title ?? displayCharger.label ?? "Selected charger",
+                  });
+                }}
+                className="mb-2 flex min-h-11 w-full touch-manipulation items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] py-2.5 font-bold text-on-surface transition-all hover:bg-white/[0.08]"
+              >
+                Get directions
+                <span className="material-symbols-outlined text-lg">
+                  route
+                </span>
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -536,39 +598,9 @@ export function ChargerMap() {
         onClose={() => setScanOpen(false)}
         onVerified={() => {
           setScanOpen(false);
-          setSessionStartedOpen(true);
+          setEscrowOpen(true);
         }}
       />
-
-      {sessionStartedOpen ? (
-        <div className="fixed inset-0 z-[112] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md sm:p-6">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#050506] p-6 shadow-[0_0_60px_rgba(52,254,160,0.1)] sm:p-8">
-            <p className="font-headline text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-              Session status
-            </p>
-            <h3 className="mt-2 font-headline text-2xl font-extrabold text-on-surface">
-              Session started
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
-              Your QR was verified and the session request was received successfully.
-            </p>
-            <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs leading-relaxed text-on-surface-variant">
-              Payment execution details are <strong>coming soon</strong> in this flow.
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setSessionStartedOpen(false);
-                setActiveIntentId(null);
-                setActiveHostHasPayoutWallet(true);
-              }}
-              className="mt-6 w-full rounded-xl bg-primary py-3 font-headline text-sm font-bold text-on-primary-fixed transition hover:brightness-110"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      ) : null}
 
       <SessionEscrowModal
         open={escrowOpen}
@@ -584,6 +616,65 @@ export function ChargerMap() {
           void loadChargers();
         }}
       />
+
+      {directionsPicker ? (
+        <div className="fixed inset-0 z-[111] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md sm:p-6">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#050506] p-6 shadow-[0_0_60px_rgba(52,254,160,0.1)] sm:p-8">
+            <p className="font-headline text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+              Directions
+            </p>
+            <h3 className="mt-2 font-headline text-xl font-extrabold text-on-surface">
+              Open route to charger
+            </h3>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              {directionsPicker.title}
+            </p>
+            <p className="mt-1 text-xs text-on-surface-variant/90">
+              Choose the map app to navigate. When you arrive, return here and tap Start Session.
+            </p>
+
+            <div className="mt-5 grid gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  window.open(
+                    googleDirectionsUrl(directionsPicker.lat, directionsPicker.lng),
+                    "_blank",
+                    "noopener,noreferrer",
+                  );
+                  setAwaitingReturnFromMaps(true);
+                  setDirectionsPicker(null);
+                }}
+                className="w-full rounded-xl border border-white/15 bg-white/[0.04] py-2.5 font-headline text-sm font-bold text-on-surface transition hover:bg-white/[0.08]"
+              >
+                Open in Google Maps
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  window.open(
+                    appleDirectionsUrl(directionsPicker.lat, directionsPicker.lng),
+                    "_blank",
+                    "noopener,noreferrer",
+                  );
+                  setAwaitingReturnFromMaps(true);
+                  setDirectionsPicker(null);
+                }}
+                className="w-full rounded-xl border border-white/15 bg-white/[0.04] py-2.5 font-headline text-sm font-bold text-on-surface transition hover:bg-white/[0.08]"
+              >
+                Open in Apple Maps
+              </button>
+              <button
+                type="button"
+                onClick={() => setDirectionsPicker(null)}
+                className="mt-2 w-full rounded-xl border border-white/10 py-2.5 font-headline text-sm font-semibold text-on-surface-variant transition-colors hover:bg-white/[0.06]"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

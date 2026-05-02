@@ -14,15 +14,24 @@ export default function ChargePage() {
         <h1 className="mb-2 font-headline text-3xl font-extrabold text-on-surface">
           Find a charger
         </h1>
-        <p className="mb-2 text-sm text-on-surface-variant max-w-2xl">
-          Browse live listings on the map (same as the home page), then register
-          as a driver so hosts can recognize you.
+        <p className="mb-2 max-w-2xl text-sm text-on-surface-variant">
+          Explore listings on the map (same experience as home). Paid sessions route
+          through Solana escrow when you advance the flow from a listing.
         </p>
         <p className="mb-8 text-sm text-on-surface-variant">
-          The map below mirrors the home page.{" "}
+          Same map embedded here for convenience.{" "}
           <Link href="/#map" className="font-bold text-primary hover:underline">
-            Open map on home
+            Open map from home
           </Link>
+          . Driver registration below uses a wallet to attach your profile before you
+          complete the form. Support{" "}
+          <a
+            href="mailto:info@m2m.energy"
+            className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+          >
+            info@m2m.energy
+          </a>
+          .
         </p>
 
         <div className="mb-12">
@@ -33,8 +42,10 @@ export default function ChargePage() {
           <h2 className="mb-2 font-headline text-xl font-bold text-on-surface">
             Driver registration
           </h2>
-          <p className="mb-6 text-sm text-on-surface-variant max-w-2xl">
-            Save your vehicle and contact info to your profile (wallet required).
+          <p className="mb-6 max-w-2xl text-sm text-on-surface-variant">
+            Connect your Solana wallet, then save vehicle and contact details so hosts see
+            a consistent driver record. OEM API telemetry attaches later as integrations
+            go live on our roadmap.
           </p>
           <WalletFirstProfileGate redirectTo="/dashboard">
             <RegisterDriverForm />

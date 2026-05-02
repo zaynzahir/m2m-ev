@@ -7,7 +7,7 @@ export function HowItWorks() {
             The Machine Protocol
           </h2>
           <p className="text-on-surface-variant">
-            Three steps to a decentralized energy future.
+            Three steps in the current M2M session flow.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-12 relative">
@@ -19,8 +19,8 @@ export function HowItWorks() {
             </div>
             <h3 className="font-headline text-xl font-bold">1. The Handshake</h3>
             <p className="text-on-surface-variant leading-relaxed px-4">
-              Driver and Host agree on the rate. USDC is locked in the M2M Escrow
-              Contract.
+              Driver and host agree on the rate. Funds are prepared for escrow
+              so both sides have clear terms before charging starts.
             </p>
           </div>
           <div className="flex flex-col items-center text-center space-y-6 relative group">
@@ -31,8 +31,8 @@ export function HowItWorks() {
             </div>
             <h3 className="font-headline text-xl font-bold">2. The Charge</h3>
             <p className="text-on-surface-variant leading-relaxed px-4">
-              Physical EV plugs into the Host&apos;s charger. M2M API acts as a
-              dual-verification oracle.
+              Driver arrives at the host charger and completes the physical
+              QR verification step before payment flow continues.
             </p>
           </div>
           <div className="flex flex-col items-center text-center space-y-6 relative group">
@@ -45,8 +45,8 @@ export function HowItWorks() {
               3. Instant Settlement
             </h3>
             <p className="text-on-surface-variant leading-relaxed px-4">
-              Smart Contract releases funds instantly on Solana after
-              verification.
+              Escrow status updates in app. Full automated API reconciliation
+              is being expanded in the next protocol phase.
             </p>
           </div>
         </div>

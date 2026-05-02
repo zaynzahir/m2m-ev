@@ -5,73 +5,73 @@ export const SUPPORTED_VEHICLE_BRANDS = [
     name: "Tesla",
     slug: "tesla",
     blurb:
-      "We support Tesla’s electric lineup. Model S, 3, X, Y, and Cybertruck, so drivers can charge with confidence on the M2M network.",
+      "Roadmap OEM API focus for telemetry where Tesla programs allow access in your region. Physical AC and DC charging still follows normal plug standards on the driver side.",
   },
   {
     name: "Rivian",
     slug: "rivian",
     blurb:
-      "R1T and R1S owners are welcome; your Rivian works with our session flow wherever the brand’s connected services are available in your region.",
+      "R1T and R1S aligned with Rivian connected services integrations as OEM APIs mature. Participation depends on availability of partner APIs where you charge.",
   },
   {
     name: "Ford",
     slug: "ford",
     blurb:
-      "From Mustang Mach E to F 150 Lightning and E Transit, compatible Ford EVs plug into the same simple pay and charge experience.",
+      "Mustang Mach E, F 150 Lightning, and E Transit class vehicles are compatibility targets through Ford developer resources as we widen API partnerships.",
   },
   {
     name: "General Motors",
     slug: "gm",
     blurb:
-      "Chevrolet, GMC, Cadillac, and Buick EVs on GM’s connected stack can join the network as we expand market by market.",
+      "Chevrolet, GMC, Cadillac, and Buick EVs on GM connected services are phased integration priorities market by market, not identical coverage everywhere on day one.",
   },
   {
     name: "Hyundai",
     slug: "hyundai",
     blurb:
-      "IONIQ 5, IONIQ 6, Kona Electric, and other Hyundai EVs, built for drivers who want fast charging without the paperwork.",
+      "IONIQ 5, IONIQ 6, Kona Electric, and related EVs tracked for OEM cloud access where Hyundai exposes partner interfaces in your geography.",
   },
   {
     name: "Kia",
     slug: "kia",
     blurb:
-      "EV6, EV9, Niro EV, and the wider Kia electric range: one wallet, one flow, whether you’re at home or on the road.",
+      "EV6, EV9, Niro EV, and the wider Kia electric range sit on our vehicle API rollout list beside shared platform cousins from Hyundai Motor Group.",
   },
   {
     name: "BMW",
     slug: "bmw",
     blurb:
-      "i4, i5, i7, iX, and BMW’s growing electric portfolio: premium charging, same transparent settlement.",
+      "i4, i5, i7, iX families are integration targets via BMW Connected API style programs depending on approvals and fleet policies per country.",
   },
   {
     name: "Mercedes Benz",
     slug: "mercedes-benz",
     blurb:
-      "EQS, EQE, EQA, EQB, and EQ SUV models: luxury EVs deserve the same instant, on chain checkout as every other driver.",
+      "EQS, EQE, EQA, EQB, and EQ SUVs are roadmap alignments toward Mercedes me style connected data exchanges when contracts permit.",
   },
   {
     name: "Volkswagen",
     slug: "volkswagen",
     blurb:
-      "ID.4, ID. Buzz, and ID. family vehicles in supported regions: global scale, local hosts.",
+      "ID family vehicles in regions with VW developer or fleet programs are prioritized for orderly API onboarding rather than a single global toggle.",
   },
   {
     name: "Volvo",
     slug: "volvo",
     blurb:
-      "EX30, EX40, EC40, EX90, and Volvo’s Recharge line: Scandinavian design meets DePIN grade reliability.",
+      "EX line and Recharge models align with Volvo Cars connected app ecosystems for future telemetry taps while today’s MVP flow relies on QR and escrow.",
   },
   {
     name: "Polestar",
     slug: "polestar",
     blurb:
-      "Polestar 2, 3, and future models: performance EVs on a network built for speed on and off the cable.",
+      "Polestar 2 onward tracked with Google embedded systems and Volvo group adjacency so cloud APIs land with consistent governance as they open up.",
   },
   {
     name: "Nissan",
     slug: "nissan",
     blurb:
-      "LEAF, ARIYA, and Nissan’s next generation electrics: proven urban and highway EVs, M2M ready.",
+      "LEAF, ARIYA, and successive Nissan EV launches follow regional NissanConnect style availability for API side signals alongside driver reported data.",
   },
 ] as const;
 
@@ -82,102 +82,102 @@ export const SUPPORTED_CHARGER_BRANDS = [
     name: "ChargePoint",
     slug: "chargepoint",
     blurb:
-      "North America’s largest public network and popular home units, ideal for hosts who already live in the ChargePoint ecosystem.",
+      "Home and networked ChargePoint installs are anchors for charger cloud API style integrations under existing partner programs.",
   },
   {
     name: "Wallbox",
     slug: "wallbox",
     blurb:
-      "Pulsar Plus, Copper, and Quasar lines: sleek wall mounted chargers millions of homeowners trust worldwide.",
+      "Pulsar, Copper, and Quasar portfolio units typically ship Wallbox cloud accounts we plan to unify through official APIs instead of onsite hardware addons.",
   },
   {
     name: "Tesla",
     slug: "tesla",
     blurb:
-      "Wall Connector and destination hardware: seamless for Tesla households opening their driveway to the network.",
+      "Wall Connector and Tesla destination hardware counted where Tesla publishes suitable integration surfaces for telemetry or occupancy style signals.",
   },
   {
     name: "Enel X",
     slug: "enel-x",
     blurb:
-      "JuiceBox and commercial Enel X stations: smart scheduling and visibility for power conscious hosts.",
+      "JuiceBox and Enel X commercial lines emphasize cloud dashboards that map cleanly to phased oracle pipelines for session aware reporting.",
   },
   {
     name: "EVBox",
     slug: "evbox",
     blurb:
-      "Livo, Elvi, and BusinessLine: favorites for multifamily, workplace, and curbside deployments.",
+      "Livo, Elvi, and BusinessLine hardware pairs with Everon style cloud backends as we pursue documented REST or OCPP gateways per deployment.",
   },
   {
     name: "ABB",
     slug: "abb",
     blurb:
-      "Terra AC wallboxes and DC equipment: industrial grade hardware for serious uptime and fleet minded hosts.",
+      "Terra AC wallboxes plus DC fleets reference ABB Ability digital layers for industrial grade uptime without custom metering firmware on site.",
   },
   {
     name: "Siemens",
     slug: "siemens",
     blurb:
-      "VersiCharge and VersiCharge Ultra: German engineering for reliable garage and small lot installs.",
+      "VersiCharge family chargers align through OEM cloud maintenance channels common in enterprise energy retrofits.",
   },
   {
     name: "Schneider Electric",
     slug: "schneider-electric",
     blurb:
-      "EVlink and connected AC lines: strong fit for smart homes already running Schneider energy gear.",
+      "EVlink connected lines interoperate where Schneider publishes partner APIs complementary to onsite load management dashboards.",
   },
   {
     name: "Zaptec",
     slug: "zaptec",
     blurb:
-      "Zaptec Go and Pro: Nordic designed home chargers with cloud native operations.",
+      "Zaptec Go and cloud first operations align with Nordic market expectations for remotely observable session health.",
   },
   {
     name: "FLO",
     slug: "flo",
     blurb:
-      "CoRe+ home units and FLO network stations: built for cold climates and harsh outdoor installs.",
+      "CoRe+ residential and FLO public nodes often already expose networked session records through operator consoles we can normalize over time.",
   },
   {
     name: "EO Charging",
     slug: "eo-charging",
     blurb:
-      "EO Mini Pro and Genius: compact UK and EU favorites for terraces, flats, and small businesses.",
+      "EO Genius and Mini Pro units seen across UK EU sites make strong candidates when regional APIs certify third party reconciliation.",
   },
   {
     name: "Hypervolt",
     slug: "hypervolt",
     blurb:
-      "Hypervolt Home 2 and 3: UK designed, app first chargers with solar aware charging modes.",
+      "Hypervolt cloud accounts deliver app first scheduling semantics we can ingest where vendor programs allow delegated access.",
   },
   {
     name: "myenergi",
     slug: "myenergi",
     blurb:
-      "Zappi: solar, wind, and grid smart charging for eco homes that want every electron accounted for.",
+      "Zappi solar aware logic supports hosts who optimize around onsite generation signals once cloud exports are negotiated.",
   },
   {
     name: "Pod Point",
     slug: "pod-point",
     blurb:
-      "Solo and Twin: ubiquitous in British driveways and workplace carparks alike.",
+      "Solo Twin workplace and homeowner installs match British density goals for networked session exports when Pod Point exposes partner telemetry.",
   },
   {
     name: "Emporia",
     slug: "emporia",
     blurb:
-      "Emporia EV Charger: affordable WiFi smart hardware paired with whole home energy insight.",
+      "Emporia chargers plus whole home clamps provide rich context for anomaly checks when empirical energy curves become part of oracle rules.",
   },
   {
     name: "Autel",
     slug: "autel",
     blurb:
-      "MaxiCharger AC lines: fast growing global brand for cost conscious hosts who still want OCPP ready gear.",
+      "MaxiCharger AC fleets highlight OCPP ready hardware at friendly price tiers for hosts who prioritize standards based cloud hooks.",
   },
   {
     name: "Blink",
     slug: "blink",
     blurb:
-      "HQ 200 and network chargers: familiar sight at retail, municipal, and multi unit properties across the U.S.",
+      "Blink HQ 200 residential and networked curbside assets appear where municipal or retail fleets already consolidate usage data centrally.",
   },
 ] as const;

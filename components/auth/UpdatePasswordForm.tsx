@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { validateStrongPassword } from "@/lib/auth-password-policy";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { updatePassword } from "@/lib/supabase/client";
 
 export function UpdatePasswordForm() {
@@ -16,8 +18,9 @@ export function UpdatePasswordForm() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (password.length < 8) {
-      setError("Use at least 8 characters.");
+    const pwdErr = validateStrongPassword(password);
+    if (pwdErr) {
+      setError(pwdErr);
       return;
     }
     if (password !== confirm) {
@@ -30,7 +33,12 @@ export function UpdatePasswordForm() {
       router.push("/profile");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update password.");
+      setError(
+        toSafeToastError(
+          err,
+          "Could not update password. Open the reset link again from email or email info@m2m.energy.",
+        ),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -43,7 +51,16 @@ export function UpdatePasswordForm() {
           New password
         </h1>
         <p className="mt-3 text-sm text-on-surface-variant">
-          Set a new password for your account.
+          Open this screen from the reset link we emailed you while that session is still
+          active. Use the same strength rules as sign up (12 characters, one number,
+          one special). Need help{" "}
+          <a
+            href="mailto:info@m2m.energy"
+            className="font-bold text-primary underline"
+          >
+            info@m2m.energy
+          </a>
+          .
         </p>
       </div>
       <div className="glass-card rounded-[2rem] border border-white/10 p-8 shadow-2xl">
@@ -60,7 +77,7 @@ export function UpdatePasswordForm() {
               type="password"
               autoComplete="new-password"
               required
-              minLength={8}
+              minLength={12}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none transition focus:ring-2 focus:ring-secondary/40"
@@ -78,7 +95,7 @@ export function UpdatePasswordForm() {
               type="password"
               autoComplete="new-password"
               required
-              minLength={8}
+              minLength={12}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none transition focus:ring-2 focus:ring-secondary/40"

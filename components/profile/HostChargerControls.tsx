@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { toSafeToastError } from "@/lib/client-facing-error";
 import {
   deleteChargerForOwner,
   setChargerListingStatusForOwner,
@@ -58,7 +59,10 @@ export function HostChargerControls({ charger, ownerId, onChanged }: Props) {
       onChanged();
     } catch (e) {
       setPriceError(
-        e instanceof Error ? e.message : "Could not update price.",
+        toSafeToastError(
+          e,
+          "Could not update price. Refresh once or email info@m2m.energy.",
+        ),
       );
     } finally {
       setPriceSaving(false);

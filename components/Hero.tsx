@@ -25,8 +25,8 @@ export function Hero() {
       </h1>
       <p className="max-w-3xl text-base leading-relaxed text-on-surface-variant sm:text-lg md:text-xl">
         M2M connects EV drivers with local homeowners. Find a charge anywhere, pay
-        instantly on chain, and earn USDC by sharing your home charger. Powered
-        by Solana DePIN.
+        with transparent escrow, and earn USDC by sharing your home charger.
+        Built on Solana with an API first roadmap.
       </p>
       <div className="flex w-full max-w-md flex-col gap-4 pt-4 sm:max-w-none sm:flex-row sm:justify-center">
         <Link

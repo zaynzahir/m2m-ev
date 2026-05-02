@@ -4,6 +4,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useState, type FormEvent } from "react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import {
   updateAuthUserProfile,
   updateUserRoleForAuth,
@@ -96,7 +97,12 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
       setEditing(false);
       onSaved();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save.");
+      setError(
+        toSafeToastError(
+          err,
+          "Could not save profile changes. Refresh once or email info@m2m.energy.",
+        ),
+      );
     } finally {
       setSubmitting(false);
     }

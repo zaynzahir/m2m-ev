@@ -5,6 +5,7 @@ import Map, { Marker } from "react-map-gl/mapbox";
 import mapboxgl from "mapbox-gl";
 
 import { AuthQrModal } from "@/components/dashboard/AuthQrModal";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import {
   deleteChargerForOwner,
   fetchChargersByOwnerId,
@@ -111,7 +112,10 @@ export function HostChargerManager({ ownerId }: HostChargerManagerProps) {
       await load();
     } catch (e) {
       setEditError(
-        e instanceof Error ? e.message : "Could not update charger.",
+        toSafeToastError(
+          e,
+          "Could not update this charger. Refresh once or email info@m2m.energy.",
+        ),
       );
     } finally {
       setEditBusy(false);
@@ -180,7 +184,12 @@ export function HostChargerManager({ ownerId }: HostChargerManagerProps) {
       setPickedLocation(null);
       await load();
     } catch (e) {
-      setLocationError(e instanceof Error ? e.message : "Could not add charger.");
+      setLocationError(
+        toSafeToastError(
+          e,
+          "Could not add this charger. Refresh once or email info@m2m.energy.",
+        ),
+      );
     } finally {
       setAddBusy(false);
     }

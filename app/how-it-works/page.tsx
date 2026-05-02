@@ -29,27 +29,27 @@ function getYouTubeEmbedUrl(rawUrl: string): string | null {
 
 const PROTOCOL_STEPS = [
   {
-    title: "On-Chain Handshake & Escrow Lock",
+    title: "On chain handshake and escrow lock",
     paragraphs: [
-      "The session begins before a single kilowatt is transferred. When a driver selects a host's charger on the M2M map, they initiate an on-chain handshake. The estimated session cost is secured in a decentralized Solana escrow smart contract. This trustless lock ensures hosts know they will be paid, and drivers know their funds are safe until the energy is actually delivered. No centralized middlemen, no counterparty guesswork.",
+      "The session begins before a single kilowatt is transferred. When a driver selects a host charger on the M2M map, they start the handshake. Estimated session funds are routed into Solana escrow as part of the live flow while we expand metering in later phases. The goal is predictable terms for hosts and protected funds for drivers without a rent taking middle operator.",
     ],
   },
   {
-    title: "Scan-to-Authenticate (Proof of Presence)",
+    title: "Scan to authenticate (Proof of Presence)",
     paragraphs: [
-      "To ensure security and prevent spoofing, M2M requires physical Proof of Presence before payment flow continues. Through the host dashboard, the charger owner generates a unique session QR. The driver scans at the location, and the system advances only after charger-match verification. This keeps remote spoofing out of the workflow while remaining API-first for charger and vehicle integrations.",
+      "To deter spoofing, M2M requires physical Proof of Presence before payment flow continues. Through the dashboard, the charger owner generates a session QR. The driver scans on site and the flow advances after the scan matches this listing. This stays compatible with API first charger and vehicle integrations as telemetry rolls out.",
     ],
   },
   {
-    title: "Dual Verification Oracle & Energy Delivery",
+    title: "Dual verification oracle and energy delivery",
     paragraphs: [
-      "As electrons flow, M2M tracks staged session state and prepares for full telemetry reconciliation. Our target dual-verification oracle model compares host-side charging output with driver-side vehicle intake to reduce tampering risk and align settlement with delivered energy.",
+      "While energy is delivered, M2M tracks staged session state in app. The roadmap adds full telemetry reconciliation via a dual verification oracle that compares charger cloud reports with vehicle side signals. That step comes after the MVP QR plus escrow rails are stable.",
     ],
   },
   {
-    title: "Sub-Second Settlement & The DePIN Loop",
+    title: "Fast settlement and the DePIN loop",
     paragraphs: [
-      "When a session ends, escrow and settlement rails finalize the payment lifecycle. On Solana, the production target is fast settlement with low transaction cost while preserving transparent host earnings and driver protection. This is the economic loop that scales home chargers into monetizable network infrastructure.",
+      "When a session completes, escrow and settlement complete the lifecycle. Solana aims for rapid finality at low fees with transparent attribution to hosts and protection for drivers. This is the economic loop that scales listed chargers into verifiable participation in the network.",
     ],
   },
 ] as const;
@@ -77,8 +77,8 @@ const LOOP_NODES = [
   },
   {
     icon: "payments",
-    label: "Instant settlement",
-    detail: "Wallet to wallet",
+    label: "Settlement",
+    detail: "After session rules pass",
   },
 ] as const;
 
@@ -148,14 +148,14 @@ export default function HowItWorksPage() {
           <section className="mx-auto mb-20 max-w-3xl md:mb-24">
             <p className="text-left text-[15px] leading-[1.85] text-on-surface-variant sm:text-lg">
               M2M (Machine to Machine) is a DePIN protocol on Solana that connects EV
-              drivers with residential charging capacity. The full experience is built
-              around a closed loop: discovery on the map, cryptographic commitment
-              before energy flows,{" "}
+              drivers with residential charging capacity. The experience centers on a
+              closed loop: discovery on the map, commitment before energy flows,{" "}
               <strong className="font-semibold text-on-surface">
                 QR code authentication
               </strong>{" "}
-              to prove the driver is physically present, dual verification of energy
-              delivery, and programmable settlement back to participants&apos; wallets.
+              to prove the driver is physically present, phased dual verification of
+              energy delivery through APIs, and settlement back to participants&apos;
+              wallets.
               Together, these stages form the{" "}
               <strong className="font-semibold text-on-surface">
                 M2M decentralized power loop
@@ -167,13 +167,13 @@ export default function HowItWorksPage() {
             <p className="mt-5 text-left text-[15px] leading-[1.85] text-on-surface-variant sm:text-lg">
               The{" "}
               <strong className="font-semibold text-on-surface">
-                scan-to-authenticate
+                Scan to authenticate
               </strong>{" "}
-              layer is central to our security model. Session-bound QR codes tie a
-              charging session to a real-world location, closing the gap between
-              software intent and physical plug-in. Combined with API-backed metering
+              layer is central to our security model. Session bound QR codes tie a
+              charging session to a real world location, closing the gap between
+              software intent and physical plug in. Combined with API backed metering
               from charger clouds and vehicle OEM platforms, the protocol minimizes
-              fraud and keeps settlement aligned with actual delivered energy.
+              fraud risk and aligns settlement with delivered energy over time.
             </p>
           </section>
 
@@ -190,7 +190,7 @@ export default function HowItWorksPage() {
             <p className="mx-auto mb-10 max-w-3xl text-center text-[15px] leading-[1.8] text-on-surface-variant sm:text-base">
               From listing to payout, each stage reinforces the next: commitment before
               consumption, presence before power, verification before settlement, and
-              instant finality on-chain so the network compounds with every successful
+              fast finality on chain so the network compounds with every successful
               session.
             </p>
             <div className="relative rounded-3xl border border-white/10 bg-surface-container-low/60 p-6 shadow-[0_0_60px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:p-8">
@@ -235,7 +235,7 @@ export default function HowItWorksPage() {
             <p className="mx-auto mb-12 max-w-2xl text-center text-sm leading-relaxed text-on-surface-variant sm:text-base">
               Four integrated stages take a session from map selection to settled payment.
               Together they define trust, presence, measurement, and economic closure
-              for peer-to-peer charging.
+              for peer to peer charging.
             </p>
             <div className="relative">
               <div
@@ -279,8 +279,15 @@ export default function HowItWorksPage() {
                 Join the M2M network
               </p>
               <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-on-surface-variant sm:text-base">
-                Explore live listings, onboard as a host, or read the full technical and
-                economic framing in our whitepaper.
+                Explore listings, onboard as a host, or read the technical and economic
+                framing in our whitepaper. Questions:{" "}
+                <a
+                  href="mailto:info@m2m.energy"
+                  className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+                >
+                  info@m2m.energy
+                </a>
+                .
               </p>
               <div className="mt-8">
                 <HowItWorksCta />

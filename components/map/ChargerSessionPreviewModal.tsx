@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { toSafeToastError } from "@/lib/client-facing-error";
 import { hasSupabasePublicConfig } from "@/lib/env/public";
 import {
   fetchChargerSessionPreview,
@@ -50,7 +51,9 @@ export function ChargerSessionPreviewModal({
       return;
     }
     if (!hasSupabasePublicConfig()) {
-      setError("Supabase is not configured.");
+      setError(
+        "Session previews are unavailable in this deployment. Email info@m2m.energy if this persists.",
+      );
       return;
     }
 
@@ -69,7 +72,12 @@ export function ChargerSessionPreviewModal({
       })
       .catch((e: unknown) => {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Could not load listing.");
+          setError(
+            toSafeToastError(
+              e,
+              "Could not load this listing. Refresh once or email info@m2m.energy.",
+            ),
+          );
         }
       })
       .finally(() => {
@@ -115,7 +123,12 @@ export function ChargerSessionPreviewModal({
         onContinueToScan(intentId, hostHasPayoutWallet);
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Could not start session.");
+      setError(
+        toSafeToastError(
+          e,
+          "Could not start session. Connect wallet and try again or email info@m2m.energy.",
+        ),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -182,7 +195,7 @@ export function ChargerSessionPreviewModal({
 
           <div className="rounded-xl border border-[#34fea0]/25 bg-[#34fea0]/[0.06] px-4 py-3 text-xs leading-relaxed text-on-surface-variant">
             <strong className="font-headline text-on-surface">How billing will work:</strong>{" "}
-            Real-time kWh reconciliation will connect to charger & vehicle APIs once partners
+            Real time kWh reconciliation will connect to charger and vehicle APIs once partners
             onboard. This milestone demonstrates wallet escrow, session intent state, and host QR
             verification—not live hardware telemetry yet.
           </div>

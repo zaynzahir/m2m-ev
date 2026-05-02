@@ -26,9 +26,9 @@ export default function TermsPage() {
         authority to bind that organization.
       </p>
 
-      <h2>2. Decentralization and peer-to-peer nature</h2>
+      <h2>2. Decentralization and peer to peer nature</h2>
       <p>
-        M2M provides software interfaces, protocol tooling, and oracle-related
+        M2M provides software interfaces, protocol tooling, and oracle related
         functionality to help participants discover charging capacity and
         coordinate sessions.{" "}
         <strong>
@@ -36,7 +36,7 @@ export default function TermsPage() {
         </strong>{" "}
         Charging arrangements, pricing, access to physical premises, and
         performance of charging equipment are{" "}
-        <strong>peer-to-peer</strong> between you and other users. You are
+        <strong>peer to peer</strong> between you and other users. You are
         responsible for your own decisions and interactions.
       </p>
 
@@ -45,10 +45,10 @@ export default function TermsPage() {
         Certain flows may involve locking or transferring digital assets on
         Solana using smart contracts or program instructions.{" "}
         <strong>
-          Settlement behavior depends on on-chain program logic and oracle
+          Settlement behavior depends on on chain program logic and oracle
           inputs
         </strong>{" "}
-        (e.g. session verification and reconciliation). M2M does not guarantee
+        such as session verification and reconciliation. M2M does not guarantee
         uninterrupted network availability, transaction inclusion, or specific
         outcomes. Fees, slippage, and network congestion may apply. You are
         solely responsible for securing your wallet keys and approving
@@ -64,7 +64,7 @@ export default function TermsPage() {
         M2M does not inspect or certify equipment. You must comply with local
         codes, insurance requirements, and manufacturer instructions. To the
         maximum extent permitted by law, M2M disclaims liability for property
-        damage, injury, or loss arising from use of third-party hardware or
+        damage, injury, or loss arising from use of third party hardware or
         locations.
       </p>
 
@@ -76,7 +76,7 @@ export default function TermsPage() {
         </strong>{" "}
         Features, economics, and security assumptions may change.{" "}
         <strong>
-          Do not rely on the Services for production or high-value use without
+          Do not rely on the Services for production or high value use without
           independent review.
         </strong>{" "}
         Data may be reset; assets on test networks have no mainnet value.
@@ -85,7 +85,7 @@ export default function TermsPage() {
       <h2>6. Prohibited conduct</h2>
       <p>You agree not to misuse the Services, including by:</p>
       <ul>
-        <li>Violating any law or third-party rights;</li>
+        <li>Violating any law or third party rights;</li>
         <li>
           Attempting to probe, scan, or disrupt the Services or other users;
         </li>
@@ -98,7 +98,7 @@ export default function TermsPage() {
       <h2>7. Intellectual property</h2>
       <p>
         The Services, branding, and documentation are owned by M2M or its
-        licensors. Open-source components are subject to their respective
+        licensors. Open source components are subject to their respective
         licenses. Subject to those licenses, you may not copy or exploit our
         materials without permission.
       </p>
@@ -110,7 +110,7 @@ export default function TermsPage() {
           WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY,
           FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
         </strong>{" "}
-        We do not warrant that the Services will be error-free, secure, or
+        We do not warrant that the Services will be error free, secure, or
         uninterrupted.
       </p>
 
@@ -146,18 +146,26 @@ export default function TermsPage() {
       <p>
         These Terms are governed by the laws of the jurisdiction specified in
         future published versions or, if none is specified, the laws of the
-        State of Delaware, USA, excluding conflict-of-law rules.
+        State of Delaware, USA, excluding conflict of law rules.
       </p>
 
       <h2>13. Contact</h2>
       <p>
-        For questions about these Terms, contact the M2M team through the
-        official channels listed on the{" "}
+        Email{" "}
+        <a
+          href="mailto:info@m2m.energy"
+          className="text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary/90"
+        >
+          info@m2m.energy
+        </a>{" "}
+        for Terms questions. Supplemental context may appear in the{" "}
         <a
           href="https://github.com/zaynzahir/m2m-ev"
           className="text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary/90"
+          rel="noopener noreferrer"
+          target="_blank"
         >
-          M2M Network open-source repository
+          public repository
         </a>
         .
       </p>

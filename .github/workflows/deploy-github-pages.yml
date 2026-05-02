@@ -1,0 +1,78 @@
+# Deploy the Next.js static export to GitHub Pages (project site: /repo-name/).
+# Requires next.config.mjs output: "export" (enabled via STATIC_EXPORT=true).
+#
+# If you added GitHub's "Next.js" template workflow, DELETE it — that one runs
+# `next build` without static export, so no `out/` folder and upload fails.
+#
+# Settings → Pages → Source: GitHub Actions (not "Deploy from a branch").
+
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  # deploy-pages v5 reads workflow artifacts; avoids permission errors when resolving uploads
+  actions: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      STATIC_EXPORT: "true"
+      BASE_PATH: /${{ github.event.repository.name }}
+      NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+      # Optional: add these as repository Secrets for a fully working map + API on Pages
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN }}
+      NEXT_PUBLIC_ESCROW_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_ESCROW_PUBLIC_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run test
+
+      - name: Static export (writes to out/)
+        run: npm run build
+
+      - name: Verify export output
+        run: |
+          test -d out || (echo "::error::No out/ — STATIC_EXPORT may be off. See next.config.mjs and this workflow env." && exit 1)
+          ls -la out | head -20
+
+      - name: Disable Jekyll (keep _next)
+        run: touch out/.nojekyll
+
+      # Pin full semver: the `v5` major tag is not published for this action (only e.g. v5.0.0).
+      # v5.x uses upload-artifact v7 and avoids duplicate-name finalize issues with deploy-pages v4.
+      - uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: out
+          # Keep .nojekyll (dotfile) in the tarball so GitHub Pages does not strip _next via Jekyll.
+          include-hidden-files: true
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
