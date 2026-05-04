@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 
 import { AuthSessionProvider } from "@/components/auth/AuthSessionProvider";
-import { GoogleProfileCompletionModal } from "@/components/auth/GoogleProfileCompletionModal";
 import { WalletSupabaseSync } from "@/components/auth/WalletSupabaseSync";
 
 import { WalletContextProvider } from "./WalletContextProvider";
@@ -17,7 +16,6 @@ export function Providers({ children }: { children: ReactNode }) {
     <WalletContextProvider>
       <AuthSessionProvider>
         <WalletSupabaseSync />
-        <GoogleProfileCompletionModal />
         {children}
       </AuthSessionProvider>
     </WalletContextProvider>
