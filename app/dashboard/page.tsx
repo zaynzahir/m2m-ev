@@ -11,10 +11,12 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { toSafeToastError } from "@/lib/client-facing-error";
 import { hasSupabasePublicConfig } from "@/lib/env/public";
+import { parseContactMethod } from "@/lib/profile-contact";
 import {
   fetchDashboardIdentity,
   fetchDriverDashboardMetrics,
   fetchHostDashboardMetrics,
+  fetchProfilesByWalletAddresses,
 } from "@/lib/supabase/client";
 import type {
   ChargerRow,
@@ -133,10 +135,17 @@ function SessionTable({
   sessions,
   roleLabel,
   emptyText,
+  counterpartLabel,
+  counterpartByWallet,
 }: {
   sessions: ChargingSessionReceiptRow[];
   roleLabel: string;
   emptyText: string;
+  counterpartLabel: string;
+  counterpartByWallet: Record<
+    string,
+    { fullName: string; username: string; phone: string }
+  >;
 }) {
   return (
     <GradientPanel>
@@ -148,6 +157,11 @@ function SessionTable({
         <>
           <div className="space-y-3 p-4 md:hidden">
             {sessions.map((s) => (
+              (() => {
+                const counterpartWallet =
+                  roleLabel === "Host" ? s.driver_wallet : s.host_wallet;
+                const counterpart = counterpartByWallet[counterpartWallet] ?? null;
+                return (
               <div key={s.id} className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-mono text-xs text-primary/90">{fmtSessionId(s.id)}</p>
@@ -165,7 +179,15 @@ function SessionTable({
                   {roleLabel}, settlement{" "}
                   <span className="font-mono font-bold text-primary">{fmtSol(s.amount_sol)}</span>
                 </p>
+                <p className="mt-1 text-xs text-on-surface-variant">
+                  {counterpartLabel}:{" "}
+                  <span className="text-on-surface">
+                    {counterpart?.fullName || shortWallet(counterpartWallet)}
+                  </span>
+                </p>
               </div>
+                );
+              })()
             ))}
           </div>
           <div className="hidden overflow-x-auto md:block">
@@ -177,6 +199,9 @@ function SessionTable({
                 </th>
                 <th className="px-6 py-4 font-headline text-[10px] font-bold uppercase tracking-[0.15em]">
                   Role
+                </th>
+                <th className="px-6 py-4 font-headline text-[10px] font-bold uppercase tracking-[0.15em]">
+                  {counterpartLabel}
                 </th>
                 <th className="px-6 py-4 font-headline text-[10px] font-bold uppercase tracking-[0.15em]">
                   Energy (kWh)
@@ -194,12 +219,26 @@ function SessionTable({
             </thead>
             <tbody>
               {sessions.map((s) => (
+                (() => {
+                  const counterpartWallet =
+                    roleLabel === "Host" ? s.driver_wallet : s.host_wallet;
+                  const counterpart = counterpartByWallet[counterpartWallet] ?? null;
+                  return (
                 <tr key={s.id} className="border-b border-white/[0.05] last:border-0">
                   <td className="px-6 py-4 font-mono text-xs text-primary/90 md:px-8">
                     {fmtSessionId(s.id)}
                   </td>
                   <td className="px-6 py-4 font-headline text-xs font-semibold text-on-surface">
                     {roleLabel}
+                  </td>
+                  <td className="px-6 py-4 text-xs text-on-surface-variant">
+                    <p className="text-on-surface">
+                      {counterpart?.fullName || shortWallet(counterpartWallet)}
+                    </p>
+                    {counterpart?.username ? (
+                      <p>@ {counterpart.username.replace(/^@+/, "")}</p>
+                    ) : null}
+                    {counterpart?.phone ? <p>{counterpart.phone}</p> : null}
                   </td>
                   <td className="px-6 py-4 tabular-nums text-on-surface-variant">Not yet</td>
                   <td className="px-6 py-4 font-mono text-xs text-on-surface-variant">Not yet</td>
@@ -218,6 +257,8 @@ function SessionTable({
                     </span>
                   </td>
                 </tr>
+                  );
+                })()
               ))}
             </tbody>
             </table>
@@ -250,6 +291,9 @@ export default function DashboardPage() {
   const [hostLastSessionAt, setHostLastSessionAt] = useState<string | null>(null);
   const [driverLastSessionAt, setDriverLastSessionAt] = useState<string | null>(null);
   const [activeListingsCount, setActiveListingsCount] = useState(0);
+  const [counterpartByWallet, setCounterpartByWallet] = useState<
+    Record<string, { fullName: string; username: string; phone: string }>
+  >({});
 
   const [qrModal, setQrModal] = useState<{ id: string; title: string } | null>(null);
 
@@ -275,6 +319,7 @@ export default function DashboardPage() {
       setWalletDisplay(effectiveWallet);
       setEmailVerified(identity.emailVerified);
       setHasProfile(Boolean(identity.profile));
+      setCounterpartByWallet({});
 
       if (!effectiveWallet) {
         setHostChargers([]);
@@ -290,6 +335,27 @@ export default function DashboardPage() {
         return;
       }
 
+      const hydrateCounterpartData = async (
+        sessionsInput: ChargingSessionReceiptRow[],
+        viewerRole: "driver" | "host",
+      ): Promise<Record<string, { fullName: string; username: string; phone: string }>> => {
+        const wallets = sessionsInput.map((s) =>
+          viewerRole === "host" ? s.driver_wallet : s.host_wallet,
+        );
+        const rows = await fetchProfilesByWalletAddresses(wallets);
+        const next: Record<string, { fullName: string; username: string; phone: string }> = {};
+        for (const row of rows) {
+          if (!row.wallet_address) continue;
+          const parsed = parseContactMethod(row.contact_method);
+          next[row.wallet_address] = {
+            fullName: row.display_name?.trim() || "",
+            username: parsed.username,
+            phone: parsed.phone,
+          };
+        }
+        return next;
+      };
+
       if (identity.resolvedRole === "host") {
         const host = await fetchHostDashboardMetrics(effectiveWallet);
         setHostChargers(host.ownedChargers);
@@ -303,6 +369,7 @@ export default function DashboardPage() {
         setTotalDriver(0);
         setDriverSessionCount(0);
         setDriverLastSessionAt(null);
+        setCounterpartByWallet(await hydrateCounterpartData(host.recentSessions, "host"));
         return;
       }
 
@@ -323,6 +390,11 @@ export default function DashboardPage() {
         setTotalDriver(driver.totalSpentSol);
         setDriverSessionCount(driver.completedSessions);
         setDriverLastSessionAt(driver.lastSessionAt);
+        const [hostMap, driverMap] = await Promise.all([
+          hydrateCounterpartData(host.recentSessions, "host"),
+          hydrateCounterpartData(driver.recentSessions, "driver"),
+        ]);
+        setCounterpartByWallet({ ...hostMap, ...driverMap });
         return;
       }
 
@@ -338,6 +410,7 @@ export default function DashboardPage() {
       setHostSessionCount(0);
       setHostLastSessionAt(null);
       setActiveListingsCount(0);
+      setCounterpartByWallet(await hydrateCounterpartData(driver.recentSessions, "driver"));
     } catch (e) {
       setError(toSafeDashboardError(e));
     } finally {
@@ -653,6 +726,8 @@ export default function DashboardPage() {
                   <SessionTable
                     sessions={driverSessions}
                     roleLabel="Driver"
+                    counterpartLabel="Host"
+                    counterpartByWallet={counterpartByWallet}
                     emptyText="No driver settlements yet. Completed charging sessions will appear here after reconciliation."
                   />
                 </section>
@@ -671,6 +746,8 @@ export default function DashboardPage() {
                   <SessionTable
                     sessions={hostSessions}
                     roleLabel="Host"
+                    counterpartLabel="Driver"
+                    counterpartByWallet={counterpartByWallet}
                     emptyText="No hosted settlements yet. Completed hosted sessions will appear here after reconciliation."
                   />
                 </section>

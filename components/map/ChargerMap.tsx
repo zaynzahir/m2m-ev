@@ -19,6 +19,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+import { CreateAccountPromptModal } from "@/components/auth/CreateAccountPromptModal";
 import { SessionEscrowModal } from "@/components/SessionEscrowModal";
 
 import { ChargerSessionPreviewModal } from "./ChargerSessionPreviewModal";
@@ -133,6 +134,7 @@ export function ChargerMap() {
   } | null>(null);
   const [awaitingReturnFromMaps, setAwaitingReturnFromMaps] = useState(false);
   const [arrivalHint, setArrivalHint] = useState<string | null>(null);
+  const [createAccountPromptOpen, setCreateAccountPromptOpen] = useState(false);
   const qrAutoOpenHandledRef = useRef(false);
 
   /** After first driver GPS sync, avoid re-flying / re-selecting on every tick. */
@@ -548,6 +550,10 @@ export function ChargerMap() {
               <button
                 type="button"
                 onClick={() => {
+                  if (!session?.user) {
+                    setCreateAccountPromptOpen(true);
+                    return;
+                  }
                   setSessionEntry("map");
                   setPreviewOpen(true);
                 }}
@@ -675,6 +681,12 @@ export function ChargerMap() {
           </div>
         </div>
       ) : null}
+
+      <CreateAccountPromptModal
+        open={createAccountPromptOpen}
+        onClose={() => setCreateAccountPromptOpen(false)}
+        nextPath="/charge"
+      />
     </section>
   );
 }

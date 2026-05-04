@@ -1,20 +1,15 @@
 "use client";
 
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useState } from "react";
 import Link from "next/link";
-import type { MouseEvent } from "react";
+
+import { useAuth } from "@/components/auth/AuthProvider";
+import { CreateAccountPromptModal } from "@/components/auth/CreateAccountPromptModal";
 
 export function Hero() {
-  const { connected } = useWallet();
-  const walletModal = useWalletModal();
-
-  const onProtectedNavigate = (e: MouseEvent<HTMLAnchorElement>) => {
-    if (!connected) {
-      e.preventDefault();
-      walletModal.setVisible(true);
-    }
-  };
+  const { session } = useAuth();
+  const [accountPromptOpen, setAccountPromptOpen] = useState(false);
+  const hasAccount = Boolean(session?.user);
 
   return (
     <section className="relative mx-auto flex max-w-7xl flex-col items-center space-y-8 px-4 py-14 text-center sm:px-8 sm:py-20">
@@ -32,20 +27,30 @@ export function Hero() {
         <Link
           href="/charge"
           className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-bold text-on-primary-fixed shadow-[0_0_25px_rgba(52,254,160,0.3)] transition-all hover:brightness-110 sm:px-8 sm:py-4"
-          onClick={onProtectedNavigate}
         >
           <span className="material-symbols-outlined">search</span>
           Find a Charger
         </Link>
-        <Link
-          href="/host"
+        <button
+          type="button"
+          onClick={() => {
+            if (hasAccount) {
+              window.location.assign("/profile");
+              return;
+            }
+            setAccountPromptOpen(true);
+          }}
           className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/10 bg-transparent px-6 py-3.5 font-bold glass-card transition-all hover:bg-white/5 sm:px-8 sm:py-4"
-          onClick={onProtectedNavigate}
         >
           <span className="material-symbols-outlined">ev_station</span>
           Host &amp; Earn
-        </Link>
+        </button>
       </div>
+      <CreateAccountPromptModal
+        open={accountPromptOpen}
+        onClose={() => setAccountPromptOpen(false)}
+        nextPath="/profile"
+      />
     </section>
   );
 }

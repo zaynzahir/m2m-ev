@@ -108,6 +108,11 @@ export default function ProfilePage() {
       "Delete your account permanently? This removes your profile and charger listings.",
     );
     if (!confirmed) return;
+    const typed = window.prompt('Type DELETE to confirm account deletion.');
+    if (typed !== "DELETE") {
+      setDeleteAccountError("Deletion cancelled. Type DELETE exactly to confirm.");
+      return;
+    }
     setDeletingAccount(true);
     try {
       await deleteCurrentAccount();

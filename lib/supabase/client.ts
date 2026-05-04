@@ -805,6 +805,26 @@ export type HostDashboardMetrics = {
   lastSessionAt: string | null;
 };
 
+export type WalletProfileLookup = {
+  wallet_address: string;
+  display_name: string | null;
+  contact_method: string | null;
+};
+
+export async function fetchProfilesByWalletAddresses(
+  walletAddresses: string[],
+): Promise<WalletProfileLookup[]> {
+  const normalized = [...new Set(walletAddresses.map((w) => w.trim()).filter(Boolean))];
+  if (!normalized.length) return [];
+  const supabase = getSupabaseBrowserClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("wallet_address,display_name,contact_method")
+    .in("wallet_address", normalized);
+  if (error) throw error;
+  return (data ?? []) as WalletProfileLookup[];
+}
+
 export async function fetchHostDashboardMetrics(
   hostWallet: string,
 ): Promise<HostDashboardMetrics> {

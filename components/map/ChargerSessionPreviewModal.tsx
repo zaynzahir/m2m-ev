@@ -7,6 +7,7 @@ import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { toSafeToastError } from "@/lib/client-facing-error";
 import { hasSupabasePublicConfig } from "@/lib/env/public";
+import { parseContactMethod } from "@/lib/profile-contact";
 import {
   fetchChargerSessionPreview,
   insertChargingSessionIntent,
@@ -160,6 +161,7 @@ export function ChargerSessionPreviewModal({
     charger.status === "offline";
 
   const hostHasPayoutWallet = Boolean(preview?.host_wallet?.trim());
+  const hostContact = parseContactMethod(preview?.host_contact_method ?? null);
 
   function shortAddr(w: string) {
     if (w.length <= 14) return w;
@@ -212,10 +214,15 @@ export function ChargerSessionPreviewModal({
               </dd>
             </div>
             <div className="border-t border-white/[0.06] pt-3">
-              <dt className="text-on-surface-variant">Host contact</dt>
+              <dt className="text-on-surface-variant">Host username</dt>
               <dd className="mt-1 font-medium text-on-surface">
-                {preview?.host_contact_method?.trim() ||
-                  "Not on file yet — coordinate via in-app messaging when enabled."}
+                {hostContact.username || "Not shared yet"}
+              </dd>
+            </div>
+            <div className="border-t border-white/[0.06] pt-3">
+              <dt className="text-on-surface-variant">Host phone</dt>
+              <dd className="mt-1 font-medium text-on-surface">
+                {hostContact.phone || "Not shared yet"}
               </dd>
             </div>
             <div className="border-t border-white/[0.06] pt-3">
@@ -224,19 +231,7 @@ export function ChargerSessionPreviewModal({
                 {preview?.host_display_name?.trim() || "M2M host"}
               </dd>
             </div>
-            {preview && !hostHasPayoutWallet ? (
-              <div className="border-t border-amber-500/30 bg-amber-500/[0.08] p-3 sm:rounded-lg">
-                <p className="text-xs font-headline font-bold text-amber-200/95">
-                  Host payout wallet missing
-                </p>
-                <p className="mt-1 text-[11px] leading-relaxed text-amber-100/90">
-                  Sessions need the <strong>listing owner&apos;s</strong> on-chain address for escrow (not
-                  the driver&apos;s). Sign in as the account that created this listing, open{" "}
-                  <strong>Profile</strong>, and <strong>Connect wallet</strong> so your address is
-                  saved there.
-                </p>
-              </div>
-            ) : preview && hostHasPayoutWallet ? (
+            {preview && hostHasPayoutWallet ? (
               <div className="border-t border-white/[0.06] pt-3">
                 <dt className="text-on-surface-variant">Host payout wallet</dt>
                 <dd className="mt-1 font-mono text-[11px] text-primary/90">

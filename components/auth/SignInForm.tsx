@@ -6,7 +6,7 @@ import { useState, type FormEvent } from "react";
 
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 import { toSafeToastError } from "@/lib/client-facing-error";
-import { signInWithEmail } from "@/lib/supabase/client";
+import { resendSignupConfirmation, signInWithEmail } from "@/lib/supabase/client";
 
 type SignInFormProps = {
   nextHref: string;
@@ -19,10 +19,15 @@ export function SignInForm({ nextHref }: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setNeedsVerification(false);
+    setResendNotice(null);
     setSubmitting(true);
     try {
       await signInWithEmail(email.trim(), password);
@@ -34,6 +39,7 @@ export function SignInForm({ nextHref }: SignInFormProps) {
         if (msg.includes("invalid login credentials")) {
           setError("Invalid email or password.");
         } else if (msg.includes("email not confirmed")) {
+          setNeedsVerification(true);
           setError("Please verify your email first, then sign in.");
         } else {
           setError(
@@ -127,6 +133,38 @@ export function SignInForm({ nextHref }: SignInFormProps) {
             <p className="rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">
               {error}
             </p>
+          ) : null}
+          {needsVerification ? (
+            <div className="rounded-xl border border-primary/30 bg-primary/10 px-3 py-3 text-sm text-on-surface-variant">
+              <p>
+                Please verify your account before sign in.
+              </p>
+              {resendNotice ? (
+                <p className="mt-2 text-xs">{resendNotice}</p>
+              ) : null}
+              <button
+                type="button"
+                disabled={resending || !email.trim()}
+                onClick={() => {
+                  setResendNotice(null);
+                  setResending(true);
+                  void resendSignupConfirmation(email.trim())
+                    .then(() => setResendNotice("Verification email sent. Check inbox and spam."))
+                    .catch((e: unknown) =>
+                      setResendNotice(
+                        toSafeToastError(
+                          e,
+                          "Could not resend verification email right now.",
+                        ),
+                      ),
+                    )
+                    .finally(() => setResending(false));
+                }}
+                className="mt-3 rounded-lg border border-primary/40 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/10 disabled:opacity-50"
+              >
+                {resending ? "Sending..." : "Resend verification email"}
+              </button>
+            </div>
           ) : null}
 
           <button

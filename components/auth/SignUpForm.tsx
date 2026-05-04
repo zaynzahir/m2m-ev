@@ -8,6 +8,7 @@ import { useMemo, useState, type FormEvent } from "react";
 
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 import { toSafeToastError } from "@/lib/client-facing-error";
+import { buildContactMethod, isLikelyFullName } from "@/lib/profile-contact";
 import {
   createInitialChargerForCurrentAuth,
   resendSignupConfirmation,
@@ -43,7 +44,8 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [vehicleModel, setVehicleModel] = useState("");
-  const [contactMethod, setContactMethod] = useState("");
+  const [username, setUsername] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [role, setRole] = useState<UserRole>("driver");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -72,7 +74,10 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
       role,
       displayName,
       vehicleModel,
-      contactMethod,
+      contactMethod: buildContactMethod({
+        username: username.trim(),
+        phone: phoneNumber.trim(),
+      }),
     });
     if (needsEmailConfirmation) {
       setNeedEmailConfirm(true);
@@ -83,7 +88,10 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
       display_name: displayName.trim(),
       vehicle_model:
         role === "driver" || role === "both" ? vehicleModel.trim() : null,
-      contact_method: contactMethod.trim(),
+      contact_method: buildContactMethod({
+        username: username.trim(),
+        phone: phoneNumber.trim(),
+      }),
       onboarding_completed_at: new Date().toISOString(),
     });
       if (role === "host" || role === "both") {
@@ -104,12 +112,20 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
     setError(null);
 
     if (!displayName.trim()) {
-      setError("Display name is required.");
+      setError("Full name is required.");
+      return;
+    }
+    if (!isLikelyFullName(displayName)) {
+      setError("Please enter your name and surname.");
       return;
     }
 
-    if (!contactMethod.trim()) {
-      setError("Contact is required.");
+    if (!username.trim()) {
+      setError("Username is required.");
+      return;
+    }
+    if (!phoneNumber.trim()) {
+      setError("Phone number is required.");
       return;
     }
 
@@ -346,7 +362,7 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="signup-display-name" className="text-xs font-headline font-bold uppercase tracking-wide text-on-surface-variant">
-              Display name
+              Full name
             </label>
             <input
               id="signup-display-name"
@@ -355,7 +371,7 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               className={inputClass}
-              placeholder="e.g. Alex"
+              placeholder="e.g. Alex Johnson"
             />
           </div>
 
@@ -377,17 +393,32 @@ export function SignUpForm({ nextHref }: SignUpFormProps) {
           ) : null}
 
           <div className="space-y-2">
-            <label htmlFor="signup-contact" className="text-xs font-headline font-bold uppercase tracking-wide text-on-surface-variant">
-              Contact (phone / Telegram)
+            <label htmlFor="signup-username" className="text-xs font-headline font-bold uppercase tracking-wide text-on-surface-variant">
+              Username
             </label>
             <input
-              id="signup-contact"
+              id="signup-username"
               type="text"
               required
-              value={contactMethod}
-              onChange={(e) => setContactMethod(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className={inputClass}
-              placeholder="+1 ... or @username"
+              placeholder="@alex"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="signup-phone" className="text-xs font-headline font-bold uppercase tracking-wide text-on-surface-variant">
+              Phone number
+            </label>
+            <input
+              id="signup-phone"
+              type="text"
+              required
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className={inputClass}
+              placeholder="+1 555 123 4567"
             />
           </div>
 

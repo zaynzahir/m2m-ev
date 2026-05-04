@@ -6,6 +6,11 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { toSafeToastError } from "@/lib/client-facing-error";
 import {
+  buildContactMethod,
+  isLikelyFullName,
+  parseContactMethod,
+} from "@/lib/profile-contact";
+import {
   updateAuthUserProfile,
   updateUserRoleForAuth,
   updateUserRoleForWallet,
@@ -27,14 +32,11 @@ type ProfileEditFormProps = {
 export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
   const { user } = useAuth();
   const { publicKey } = useWallet();
+  const parsedContact = parseContactMethod(profile.contact_method);
   const [displayName, setDisplayName] = useState(profile.display_name ?? "");
   const [vehicleModel, setVehicleModel] = useState(profile.vehicle_model ?? "");
-  const [contactMethod, setContactMethod] = useState(
-    profile.contact_method ?? "",
-  );
-  const [ageInput, setAgeInput] = useState(
-    profile.age !== null && profile.age !== undefined ? String(profile.age) : "",
-  );
+  const [username, setUsername] = useState(parsedContact.username);
+  const [phoneNumber, setPhoneNumber] = useState(parsedContact.phone);
   const [role, setRole] = useState<UserRole>(profile.role);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,10 +49,9 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
   const resetFormToProfile = () => {
     setDisplayName(profile.display_name ?? "");
     setVehicleModel(profile.vehicle_model ?? "");
-    setContactMethod(profile.contact_method ?? "");
-    setAgeInput(
-      profile.age !== null && profile.age !== undefined ? String(profile.age) : "",
-    );
+    const parsed = parseContactMethod(profile.contact_method);
+    setUsername(parsed.username);
+    setPhoneNumber(parsed.phone);
     setRole(profile.role);
   };
 
@@ -62,20 +63,25 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
     setSubmitting(true);
     try {
       const vehiclePayload = isDriver ? vehicleModel.trim() || null : null;
-      const parsedAge =
-        ageInput.trim().length === 0
-          ? null
-          : Number.parseInt(ageInput.trim(), 10);
-      if (parsedAge !== null && (!Number.isInteger(parsedAge) || parsedAge < 13 || parsedAge > 120)) {
-        throw new Error("Age must be a whole number between 13 and 120.");
+      if (!displayName.trim() || !isLikelyFullName(displayName)) {
+        throw new Error("Please enter your name and surname.");
       }
+      if (!username.trim()) {
+        throw new Error("Username is required.");
+      }
+      if (!phoneNumber.trim()) {
+        throw new Error("Phone number is required.");
+      }
+      const contactMethod = buildContactMethod({
+        username: username.trim(),
+        phone: phoneNumber.trim(),
+      });
 
       if (user) {
         await updateAuthUserProfile({
           display_name: displayName.trim() || null,
           vehicle_model: vehiclePayload,
-          contact_method: contactMethod.trim() || null,
-          age: parsedAge,
+          contact_method: contactMethod || null,
         });
         if (role !== profile.role) {
           await updateUserRoleForAuth(role);
@@ -84,8 +90,7 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
         await updateWalletUserProfile(publicKey.toBase58(), {
           display_name: displayName.trim() || null,
           vehicle_model: vehiclePayload,
-          contact_method: contactMethod.trim() || null,
-          age: parsedAge,
+          contact_method: contactMethod || null,
         });
         if (role !== profile.role) {
           await updateUserRoleForWallet(publicKey.toBase58(), role);
@@ -158,7 +163,7 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
 
       <div className="space-y-2">
         <label className="text-xs font-bold text-on-surface-variant" htmlFor="pe-name">
-          Display name
+          Full name
         </label>
         <input
           id="pe-name"
@@ -167,40 +172,21 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
           disabled={!editing}
           placeholder={
             isHost && !isDriver
-              ? "e.g. Alex — Brooklyn host"
-              : "e.g. Alex"
+              ? "e.g. Alex Johnson"
+              : "e.g. Alex Johnson"
           }
           className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
         />
         <p className="text-[11px] text-on-surface-variant">
           {isHost
             ? "Shown on listings and in session handoffs."
-            : "How you appear in the app."}
+            : "Use first and last name so hosts/drivers can identify you."}
         </p>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-xs font-bold text-on-surface-variant" htmlFor="pe-age">
-          Age
-        </label>
-        <input
-          id="pe-age"
-          type="number"
-          min={13}
-          max={120}
-          value={ageInput}
-          onChange={(e) => setAgeInput(e.target.value)}
-          disabled={!editing}
-          placeholder="e.g. 24"
-          className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
-        />
-        <p className="text-[11px] text-on-surface-variant">
-          Optional. Used for account settings and compliance checks.
-        </p>
-      </div>
-
-      {isDriver ? (
-        <div className="space-y-3 rounded-xl border border-primary/15 bg-primary/[0.04] p-4">
+      <div className="space-y-3 rounded-xl border border-primary/15 bg-primary/[0.04] p-4">
+        {isDriver ? (
+          <>
           <p className="font-headline text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
             Driver
           </p>
@@ -223,30 +209,48 @@ export function ProfileEditForm({ profile, onSaved }: ProfileEditFormProps) {
               Helps hosts recognize your session and plan plug type.
             </p>
           </div>
+          </>
+        ) : null}
 
           <div className="space-y-2">
             <label
               className="text-xs font-bold text-on-surface-variant"
-              htmlFor="pe-contact"
+              htmlFor="pe-username"
             >
-              Contact (phone / Telegram)
+              Username
             </label>
             <input
-              id="pe-contact"
-              value={contactMethod}
-              onChange={(e) => setContactMethod(e.target.value)}
+              id="pe-username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               disabled={!editing}
-              placeholder="+1 … or @username"
+              placeholder="@alex"
+              className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label
+              className="text-xs font-bold text-on-surface-variant"
+              htmlFor="pe-phone"
+            >
+              Phone number
+            </label>
+            <input
+              id="pe-phone"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              disabled={!editing}
+              placeholder="+1 555 123 4567"
               className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none focus:ring-2 focus:ring-primary/40"
             />
             <p className="text-[11px] text-on-surface-variant">
               {isHost && isDriver
                 ? "Shared for both driver and host coordination."
-                : "Optional — for session updates from hosts."}
+                : "Used by drivers/hosts to coordinate live sessions."}
             </p>
           </div>
-        </div>
-      ) : null}
+      </div>
 
       {error ? (
         <p className="text-sm text-error">{error}</p>

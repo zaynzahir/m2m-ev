@@ -192,11 +192,6 @@ export function SessionEscrowModal({
 
             {phase === "idle" || phase === "error" ? (
               <>
-                {!hostHasPayoutWallet ? (
-                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-3 py-2 text-center text-xs leading-relaxed text-amber-100/90">
-                    Host payout wallet is missing. Ask the listing owner to connect their wallet in Profile before payment can start.
-                  </div>
-                ) : null}
                 {phase === "error" && errorMessage ? (
                   <p className="text-center text-sm text-error">{errorMessage}</p>
                 ) : null}
@@ -210,8 +205,8 @@ export function SessionEscrowModal({
                   <span className="material-symbols-outlined text-lg">bolt</span>
                 </button>
                 <p className="text-center text-[11px] text-on-surface-variant">
-                  Wallet approval required. Swap may fail due to slippage or low
-                  liquidity.
+                  Wallet approval required. Swap may fail due to slippage, low
+                  liquidity, or unavailable host escrow routing.
                 </p>
               </>
             ) : null}

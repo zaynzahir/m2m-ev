@@ -23,6 +23,11 @@ export const metadata: Metadata = {
   title: "M2M | The Decentralized Power Grid for Machines",
   description:
     "M2M connects EV drivers with local homeowners. Find a charge anywhere, pay instantly on chain, and earn USDC by sharing your home charger.",
+  icons: {
+    icon: "/logo/logo.jpg",
+    apple: "/logo/logo.jpg",
+    shortcut: "/logo/logo.jpg",
+  },
 };
 
 export const viewport: Viewport = {
