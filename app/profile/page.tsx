@@ -7,7 +7,6 @@ import { useEffect, useRef, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { GridRoleModal } from "@/components/auth/GridRoleModal";
 import { ProfileEditForm } from "@/components/profile/ProfileEditForm";
 import { HostChargerManager } from "@/components/profile/HostChargerManager";
 import { toSafeToastError } from "@/lib/client-facing-error";
@@ -248,15 +247,6 @@ export default function ProfilePage() {
                   onSaved={() => void refetch()}
                 />
               </section>
-            ) : null}
-
-            {profile &&
-            !profile.onboarding_completed_at &&
-            (user || publicKey) ? (
-              <GridRoleModal
-                profile={profile}
-                onCompleted={() => void refetch()}
-              />
             ) : null}
 
             {profile && showHost ? (

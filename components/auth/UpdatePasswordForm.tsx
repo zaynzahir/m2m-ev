@@ -12,6 +12,8 @@ export function UpdatePasswordForm() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,16 +74,26 @@ export function UpdatePasswordForm() {
             >
               New password
             </label>
-            <input
-              id="new-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={12}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none transition focus:ring-2 focus:ring-secondary/40"
-            />
+            <div className="relative">
+              <input
+                id="new-password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                minLength={12}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 pr-20 text-on-surface outline-none transition focus:ring-2 focus:ring-secondary/40"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-bold text-on-surface-variant hover:bg-white/10"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
           <div className="space-y-2">
             <label
@@ -90,16 +102,26 @@ export function UpdatePasswordForm() {
             >
               Confirm
             </label>
-            <input
-              id="confirm-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={12}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 text-on-surface outline-none transition focus:ring-2 focus:ring-secondary/40"
-            />
+            <div className="relative">
+              <input
+                id="confirm-password"
+                type={showConfirm ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                minLength={12}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-surface-container-low/50 px-4 py-3 pr-20 text-on-surface outline-none transition focus:ring-2 focus:ring-secondary/40"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-bold text-on-surface-variant hover:bg-white/10"
+                aria-label={showConfirm ? "Hide password confirmation" : "Show password confirmation"}
+              >
+                {showConfirm ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
           {error ? (
             <p className="rounded-xl border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">
