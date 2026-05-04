@@ -958,6 +958,16 @@ export async function deleteCurrentAccount(): Promise<void> {
   if (sessionErr) throw sessionErr;
   if (!session?.access_token) throw new Error("Sign in again to delete your account.");
 
+  // Preferred path: Supabase Edge Function (project-managed server runtime).
+  const { error: edgeErr } = await supabase.functions.invoke("delete-account", {
+    body: {},
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  });
+  if (!edgeErr) return;
+
+  // Fallback path: local API route (for environments where Edge Function is not deployed yet).
   const response = await fetch("/api/account/delete", {
     method: "POST",
     headers: {
@@ -966,17 +976,16 @@ export async function deleteCurrentAccount(): Promise<void> {
     },
     body: JSON.stringify({}),
   });
+  if (response.ok) return;
 
-  if (!response.ok) {
-    let msg = "Could not delete account.";
-    try {
-      const body = (await response.json()) as { error?: string };
-      if (body?.error) msg = body.error;
-    } catch {
-      // noop
-    }
-    throw new Error(msg);
+  let msg = edgeErr.message || "Could not delete account.";
+  try {
+    const body = (await response.json()) as { error?: string };
+    if (body?.error) msg = body.error;
+  } catch {
+    // noop
   }
+  throw new Error(msg);
 }
 
 export async function updateUserRoleForAuth(role: UserRole): Promise<void> {

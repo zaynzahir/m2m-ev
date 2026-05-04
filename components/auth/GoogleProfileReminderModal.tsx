@@ -39,14 +39,19 @@ export function GoogleProfileReminderModal() {
       !contact.phone.trim();
 
     const key = `m2m-google-profile-reminder:${user.id}`;
-    const alreadyDismissed = typeof window !== "undefined" && localStorage.getItem(key) === "1";
-    setOpen(missing && !alreadyDismissed);
+    if (!missing) {
+      sessionStorage.removeItem(key);
+      setOpen(false);
+      return;
+    }
+    const alreadyDismissedInThisSession = sessionStorage.getItem(key) === "1";
+    setOpen(!alreadyDismissedInThisSession);
   }, [loading, user, profile, pathname]);
 
   if (!open || !user) return null;
 
   const dismiss = () => {
-    localStorage.setItem(`m2m-google-profile-reminder:${user.id}`, "1");
+    sessionStorage.setItem(`m2m-google-profile-reminder:${user.id}`, "1");
     setOpen(false);
   };
 

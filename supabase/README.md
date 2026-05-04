@@ -14,3 +14,17 @@ Apply in order in the **Supabase SQL Editor** (or `supabase db push` if you use 
 After email sign up, the app also calls `ensureAuthProfileRow()` in the browser as a backup if the trigger has not run yet, and to keep email / provider / verification fields in sync.
 
 **Production:** Replace anon write policies with authenticated policies and/or service-role API routes that verify Solana message signatures.
+
+## Edge Function: delete-account
+
+Account deletion now prefers Supabase Edge Function `delete-account` and falls back to the Next.js API route if the function is not deployed yet.
+
+Deploy:
+
+```bash
+supabase functions deploy delete-account
+```
+
+Required Supabase secret (Project -> Edge Functions -> Secrets):
+
+- `SUPABASE_SERVICE_ROLE_KEY`
