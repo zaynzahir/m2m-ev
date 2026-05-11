@@ -22,19 +22,27 @@ function BrandRow({
 
   return (
     <li className="glass-card flex items-center gap-5 rounded-2xl border border-white/10 p-5 sm:gap-6 sm:p-7">
-      <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-surface-container-low shadow-inner sm:h-32 sm:w-32">
+      <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-surface-container-low shadow-inner sm:h-32 sm:w-32">
         {showImage ? (
-          <img
-            src={src}
-            alt=""
-            width={160}
-            height={160}
-            className="h-full w-full object-contain p-3 sm:p-3.5"
-            onError={() => setShowImage(false)}
-          />
+          <div
+            className="absolute inset-3 flex items-start justify-center overflow-hidden sm:inset-[0.875rem]"
+            style={{ clipPath: "inset(0 0 15% 0)" }}
+            aria-hidden
+          >
+            <img
+              src={src}
+              alt=""
+              width={160}
+              height={160}
+              className="h-full w-full object-contain object-top"
+              onError={() => setShowImage(false)}
+            />
+          </div>
         ) : (
-          <span className="material-symbols-outlined text-5xl text-on-surface-variant/40 sm:text-[3.25rem]">
-            bolt
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="material-symbols-outlined text-5xl text-on-surface-variant/40 sm:text-[3.25rem]">
+              bolt
+            </span>
           </span>
         )}
       </div>
