@@ -149,7 +149,7 @@ export default function WhitepaperPage() {
                     unlocks a global peer to peer energy grid. We facilitate
                     trust minimized charging sessions routed through on chain escrow
                     rails. We are seeking a{" "}
-                    <Money>$100,000 USD</Money> ecosystem grant to transition our V1
+                    <Money>$250,000 USD</Money> ecosystem grant to transition our V1
                     architecture from devnet to mainnet, finalize our legal entity
                     structuring, execute rigorous smart contract audits, and scale our
                     engineering team for API integrations and protocol reliability.
