@@ -42,13 +42,13 @@ import {
   useLocateMe,
   useMapProfile,
 } from "@/hooks/useDriverMapLocation";
+import { DEFAULT_MAP_CENTER, DEFAULT_MAP_REGION_LABEL } from "@/lib/constants/map";
 import type { ChargerRow } from "@/lib/types/database";
 
-/** Default map view: New York, United States (before geolocation). */
 const DEFAULT_MAP_VIEW = {
-  longitude: -74.006,
-  latitude: 40.7128,
-  zoom: 11,
+  longitude: DEFAULT_MAP_CENTER.longitude,
+  latitude: DEFAULT_MAP_CENTER.latitude,
+  zoom: DEFAULT_MAP_CENTER.zoom,
 } as const;
 const ACCURACY_RING_MIN_M = 75;
 
@@ -460,7 +460,7 @@ export function ChargerMap() {
               </span>
             </button>
             <p className="hidden text-[11px] leading-snug text-on-surface-variant/90 sm:block">
-              The map opens on New York by default. Tap to center on you and
+              The map opens on {DEFAULT_MAP_REGION_LABEL} by default. Tap to center on you and
               highlight the nearest listed charger; drivers with live tracking
               also get a dot and a one-time fly-to when GPS first locks.
             </p>

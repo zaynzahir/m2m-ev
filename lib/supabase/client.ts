@@ -5,6 +5,7 @@ import {
 } from "@supabase/supabase-js";
 
 import { getPublicEnv, hasSupabasePublicConfig } from "@/lib/env/public";
+import { DEFAULT_MAP_CENTER } from "@/lib/constants/map";
 import type {
   ChargerRow,
   ChargingChargerRow,
@@ -1000,8 +1001,8 @@ export async function updateUserRoleForWallet(
 }
 
 /** Default map pin for chargers created from Profile (hosts can refine location on /host later). */
-const PROFILE_CHARGER_DEFAULT_LAT = 40.7128;
-const PROFILE_CHARGER_DEFAULT_LNG = -74.006;
+const PROFILE_CHARGER_DEFAULT_LAT = DEFAULT_MAP_CENTER.latitude;
+const PROFILE_CHARGER_DEFAULT_LNG = DEFAULT_MAP_CENTER.longitude;
 
 export async function insertChargerForAuthOwner(input: {
   ownerId: string;
@@ -1032,7 +1033,7 @@ export async function insertChargerForAuthOwner(input: {
     title: input.title.trim(),
     label: input.plugType,
     plug_type: input.plugType,
-    description: "Listed from profile — pin shown at NYC hub until you place the node on the map.",
+    description: "Listed from profile — pin shown at Istanbul hub until you place the node on the map.",
     parking_instructions: "",
     charger_brand_slug: "other",
   });

@@ -14,6 +14,7 @@ import {
   updateChargerListingFieldsForOwner,
 } from "@/lib/supabase/client";
 import { getPublicEnv, hasMapboxPublicToken } from "@/lib/env/public";
+import { DEFAULT_MAP_CENTER } from "@/lib/constants/map";
 import type { ChargerRow, ChargerStatus } from "@/lib/types/database";
 
 const PLUG_OPTIONS: ChargerType[] = [
@@ -555,8 +556,8 @@ export function HostChargerManager({ ownerId }: HostChargerManagerProps) {
                       mapLib={mapboxgl}
                       mapboxAccessToken={mapboxToken}
                       initialViewState={{
-                        longitude: pickedLocation?.lng ?? -74.006,
-                        latitude: pickedLocation?.lat ?? 40.7128,
+                        longitude: pickedLocation?.lng ?? DEFAULT_MAP_CENTER.longitude,
+                        latitude: pickedLocation?.lat ?? DEFAULT_MAP_CENTER.latitude,
                         zoom: pickedLocation ? 14 : 11,
                       }}
                       style={{ width: "100%", height: "100%" }}

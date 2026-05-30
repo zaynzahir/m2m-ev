@@ -11,6 +11,7 @@ import type { ChargerType } from "@/lib/supabase/client";
 import { createChargerListing } from "@/lib/supabase/client";
 import { toSafeToastError } from "@/lib/client-facing-error";
 import { getPublicEnv, hasMapboxPublicToken } from "@/lib/env/public";
+import { DEFAULT_MAP_CENTER } from "@/lib/constants/map";
 import { SUPPORTED_CHARGER_BRANDS } from "@/lib/supported-brands";
 
 type LatLng = { lat: number; lng: number };
@@ -56,8 +57,8 @@ export function RegisterChargerForm() {
 
   const initialViewState = useMemo(
     () => ({
-      longitude: picked?.lng ?? -74.006,
-      latitude: picked?.lat ?? 40.7128,
+      longitude: picked?.lng ?? DEFAULT_MAP_CENTER.longitude,
+      latitude: picked?.lat ?? DEFAULT_MAP_CENTER.latitude,
       zoom: 11,
     }),
     [picked],
