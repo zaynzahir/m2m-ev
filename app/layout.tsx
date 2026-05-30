@@ -22,7 +22,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "M2M | The Decentralized Power Grid for Machines",
   description:
-    "M2M connects EV drivers with local homeowners. Find a charge anywhere, pay instantly on chain, and earn USDC by sharing your home charger.",
+    "M2M is API-driven DePIN middleware on Solana—connecting smart chargers and connected vehicles through cloud APIs for trust-minimized USDC settlement.",
   icons: {
     icon: "/logo/logo.jpg",
     apple: "/logo/logo.jpg",
@@ -46,6 +46,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${manrope.variable} ${inter.variable}`}>
       <head>
+        <link rel="icon" href="/logo/logo.jpg?v=3" type="image/jpeg" sizes="any" />
+        <link rel="shortcut icon" href="/logo/logo.jpg?v=3" type="image/jpeg" />
+        <link rel="apple-touch-icon" href="/logo/logo.jpg?v=3" />
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
           rel="stylesheet"

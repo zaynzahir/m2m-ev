@@ -22,7 +22,7 @@ const LINKS = [
   {
     href: "/supported-chargers",
     title: "Supported chargers",
-    description: "Wallbox OEMs and hardware families hosts can list with confidence.",
+    description: "OCPP cloud and smart-charger API families compatible with the M2M middleware layer.",
     icon: "ev_station",
     accent: "text-secondary",
     borderHover: "hover:border-secondary/25",
@@ -41,8 +41,8 @@ export function SupportAndVehicles() {
           Support &amp; compatibility
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-on-surface-variant sm:text-base">
-          Get help, then see which vehicles and chargers fit the network today.
-          For support, contact info@m2m.energy.
+          API compatibility, support, and protocol documentation. If it has a cloud
+          API, it can join the network. Contact info@m2m.energy.
         </p>
       </div>
 

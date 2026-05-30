@@ -19,13 +19,15 @@ export function Hero() {
         <span className="text-primary text-glow-primary">Grid for Machines</span>
       </h1>
       <p className="max-w-3xl text-base leading-relaxed text-on-surface-variant sm:text-lg md:text-xl">
-        M2M connects EV drivers with local homeowners. Find a charge anywhere, pay
-        with transparent escrow, and earn USDC by sharing your home charger.
-        Built on Solana with an API first roadmap.
+        M2M is software-only, API-driven DePIN middleware on Solana. We connect
+        existing smart chargers via OCPP cloud APIs with connected vehicles through
+        enterprise APIs such as Tesla Fleet API—no custom hardware required.
+        Discover sessions on the map, reconcile cloud telemetry, and settle in USDC
+        with sub-second finality.
       </p>
       <div className="flex w-full max-w-md flex-col gap-4 pt-4 sm:max-w-none sm:flex-row sm:justify-center">
         <Link
-          href="/charge"
+          href="#map"
           className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 font-bold text-on-primary-fixed shadow-[0_0_25px_rgba(52,254,160,0.3)] transition-all hover:brightness-110 sm:px-8 sm:py-4"
         >
           <span className="material-symbols-outlined">search</span>

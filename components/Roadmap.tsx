@@ -9,10 +9,11 @@ export function Roadmap() {
           <span className="px-4 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full tracking-widest uppercase">
             Phase 1
           </span>
-          <h3 className="font-headline text-2xl font-bold">The MVP (Current)</h3>
+          <h3 className="font-headline text-2xl font-bold">V1 Web Application &amp; Devnet Escrow Live</h3>
           <p className="text-on-surface-variant leading-relaxed">
-            Web App launch, Solana Devnet Escrow Smart Contract deployed, Mapbox
-            integration, and local beta testing in New York.
+            Production web app, map discovery, session intent flow, QR proof of
+            presence, and Solana devnet escrow—establishing the data bridge between
+            listed infrastructure and on-chain settlement rails.
           </p>
           <div className="flex items-center gap-2 text-primary">
             <span
@@ -21,17 +22,20 @@ export function Roadmap() {
             >
               check_circle
             </span>
-            <span className="text-xs font-bold">Live on Devnet</span>
+            <span className="text-xs font-bold">Current</span>
           </div>
         </div>
         <div className="glass-card border border-white/10 p-8 rounded-3xl space-y-6 hover:translate-y-[-8px] transition-transform">
           <span className="px-4 py-1 bg-white/10 text-on-surface-variant text-xs font-bold rounded-full tracking-widest uppercase">
-            Phase 2
+            Phase 2 · Summer 2026
           </span>
-          <h3 className="font-headline text-2xl font-bold">API &amp; Mobile</h3>
+          <h3 className="font-headline text-2xl font-bold">
+            Enterprise API Integrations &amp; Oracle Sandbox
+          </h3>
           <p className="text-on-surface-variant leading-relaxed">
-            Integration with existing smart charger and vehicle APIs for
-            automated telemetry, plus M2M iOS and Android app release.
+            Tesla Fleet API and OCPP charger cloud integrations, plus oracle
+            middleware sandbox testing—reconciling charger energy output against
+            vehicle battery intake before Anchor escrow releases USDC.
           </p>
           <div className="flex items-center gap-2 text-on-surface-variant/50">
             <span className="material-symbols-outlined text-sm">schedule</span>
@@ -42,21 +46,22 @@ export function Roadmap() {
         </div>
         <div className="glass-card border border-white/10 p-8 rounded-3xl space-y-6 hover:translate-y-[-8px] transition-transform">
           <span className="px-4 py-1 bg-white/10 text-on-surface-variant text-xs font-bold rounded-full tracking-widest uppercase">
-            Phase 3
+            Phase 3 · Fall 2026
           </span>
           <h3 className="font-headline text-2xl font-bold">
-            Scaling and Partner Expansion
+            Colosseum, Mainnet-Beta &amp; Mobile
           </h3>
           <p className="text-on-surface-variant leading-relaxed">
-            Global rollout, partner onboarding, and broader machine energy use
-            cases after API integrations mature across regions.
+            Colosseum Hackathon participation, mainnet-beta launch, and native
+            mobile app rollout—scaling the middleware layer for institutional DePIN
+            adoption across regions.
           </p>
           <div className="flex items-center gap-2 text-on-surface-variant/30">
             <span className="material-symbols-outlined text-sm">
               rocket_launch
             </span>
             <span className="text-xs font-bold text-on-surface-variant/50">
-              Coming Late 2026
+              Fall 2026
             </span>
           </div>
         </div>

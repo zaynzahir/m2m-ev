@@ -23,10 +23,11 @@ export default function SupportedChargersPage() {
               Supported chargers
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-left text-[15px] leading-relaxed text-on-surface-variant sm:text-center sm:text-base">
-              Hardware families we align with through charger cloud APIs and standards
-              such as OCPP where vendors expose them. Listing a brand here is not a
-              guarantee every model or firmware behaves the same until integrations are
-              live. Hosting or partnership questions{" "}
+              OCPP cloud and smart-charger API brands compatible with the M2M middleware
+              layer. Listing a brand here is not a guarantee every model or firmware
+              behaves the same until integrations are live. No custom hardware
+              deployment—if it has a cloud API, it can join the network. Hosting or
+              partnership questions{" "}
               <a
                 href="mailto:info@m2m.energy"
                 className="font-semibold text-secondary underline decoration-secondary/40 underline-offset-2 hover:text-secondary"

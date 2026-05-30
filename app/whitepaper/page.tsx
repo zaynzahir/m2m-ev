@@ -34,67 +34,67 @@ function Money({
 const architecturePillars = [
   {
     title: "Proof of Presence",
-    body: "Sessions are initiated via a physical QR code handshake at the location to deter spoofing and confirm the driver is at the node before payment flow proceeds.",
+    body: "Sessions are initiated via a QR code handshake at the location to deter spoofing and confirm the driver is at the node before payment flow proceeds—complementing cloud API reconciliation.",
   },
   {
-    title: "Dual verification oracle",
-    body: "The direction of travel compares charger cloud telemetry with vehicle OEM telemetry in a phased model. Early releases pair QR proof of presence with escrow while API reconciliation hardens settlement logic.",
+    title: "Dual-verification oracle",
+    body: "Our oracle pulls real-time energy output data from the charger's cloud API and matches it against the vehicle's real-time battery intake API. Once the data matches, the Solana Anchor escrow instantly releases USDC. No custom hardware required—if it has an API, it can join the network.",
   },
   {
     title: "Solana escrow",
-    body: "Funds are routed through Solana escrow using shared session rules so hosts and drivers have clear milestones for lock, charge, release, or refund stages as metering and integrations mature.",
+    body: "Funds route through Solana Anchor escrow with shared session rules so hosts and drivers have clear milestones for lock, charge, release, or refund—settlement with sub-second finality and transparent on-chain attribution.",
   },
 ] as const;
 
 const roadmapPhases = [
   {
-    title: "Phase 1: Foundation, Security, and Mainnet Beta",
+    title: "Phase 1 (Current): V1 Web Application & Devnet Escrow Live",
     items: [
       {
-        label: "Legal and Compliance",
-        text: "Establish the formal legal wrapper or entity required to operate an API integrated decentralized energy coordination network.",
+        label: "Production Web Application",
+        text: "Map discovery, session intent flow, QR proof of presence, and host onboarding—establishing the software middleware layer between listed infrastructure and on-chain settlement.",
       },
       {
-        label: "Smart Contract Audits",
-        text: "Comprehensive third party security audits of the M2M Solana escrow programs to protect user funds.",
+        label: "Devnet Escrow",
+        text: "Solana Anchor escrow programs live on devnet with session lifecycle rules for lock, charge, release, and refund stages.",
       },
       {
-        label: "Mainnet Migration",
-        text: "Transitioning the core escrow and session coordination infrastructure from devnet to Solana Mainnet Beta for a closed beta pilot.",
+        label: "Protocol Foundations",
+        text: "Open reference architecture for API-driven DePIN coordination, documented for ecosystem review and Superteam grant alignment.",
       },
     ],
   },
   {
-    title: "Phase 2: API Oracle and Protocol Middleware",
+    title: "Phase 2 (Summer 2026): Enterprise API Integrations & Oracle Sandbox",
     items: [
       {
-        label: "OEM and Telemetry Integrations",
-        text: "Building out the secure API pipelines to pull real time vehicle data directly from major EV manufacturers.",
+        label: "Tesla Fleet API Integration",
+        text: "Secure pipelines to pull real-time vehicle battery intake data from Tesla and compatible enterprise OEM APIs.",
       },
       {
-        label: "Charger Middleware",
-        text: "Expanding software bridges to charger cloud APIs and network providers, enabling standard Level 2 and Level 3 infrastructure without custom hardware dependency.",
+        label: "OCPP Charger Cloud Integration",
+        text: "Middleware bridges to OCPP and charger cloud backends—connecting existing smart chargers without custom hardware deployment.",
       },
       {
-        label: "Oracle Deployment",
-        text: "Launching staged dual verification oracle automation for reconciliation and payment release using API sourced telemetry.",
+        label: "Oracle Middleware Sandbox",
+        text: "Dual-verification oracle sandbox testing: reconciling charger energy output against vehicle intake before Anchor escrow releases USDC.",
       },
     ],
   },
   {
-    title: "Phase 3: Consumer Scale and Mobile Clients",
+    title: "Phase 3 (Fall 2026): Colosseum, Mainnet-Beta & Mobile",
     items: [
       {
-        label: "Native Mobile Applications",
-        text: "Launching polished iOS and Android clients optimized for fast in car use, featuring native Solana wallet integrations.",
+        label: "Colosseum Hackathon",
+        text: "Participation in the Colosseum ecosystem hackathon to accelerate middleware adoption and Solana-native DePIN integrations.",
       },
       {
-        label: "Host Onboarding Scaling",
-        text: "Deploying targeted incentive programs to rapidly density the network of available home and commercial chargers in key metropolitan areas.",
+        label: "Mainnet-Beta Launch",
+        text: "Transition core escrow and oracle middleware from devnet to Solana mainnet-beta for institutional pilot deployments.",
       },
       {
-        label: "Protocol Decentralization",
-        text: "Beginning the process of decentralizing the oracle nodes to ensure the network remains censorship resistant and robust.",
+        label: "Mobile App Rollout",
+        text: "Native iOS and Android clients optimized for in-vehicle use, featuring Solana wallet integrations and session management.",
       },
     ],
   },
@@ -114,13 +114,13 @@ export default function WhitepaperPage() {
             <div className="px-6 py-12 sm:px-10 sm:py-14 md:px-14 md:py-18 lg:px-16 lg:py-20">
               <header className="border-b border-white/[0.08] pb-10 text-center md:pb-12">
                 <p className="font-headline text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/90 sm:text-xs">
-                  Grant proposal
+                  Superteam grant application
                 </p>
                 <h1 className="mt-5 text-balance font-headline text-[1.65rem] font-extrabold leading-[1.12] tracking-tight text-on-surface sm:text-3xl md:text-[2.125rem] md:leading-[1.1] lg:text-[2.35rem]">
-                  M2M Network: The Decentralized Power Grid for Machines
+                  M2M Network: API-Driven DePIN Middleware for Machines
                 </h1>
                 <p className="mx-auto mt-6 max-w-xl font-headline text-sm font-semibold uppercase tracking-[0.2em] text-on-surface-variant/95 md:text-[0.8125rem]">
-                  Solana Foundation Grant Proposal
+                  Software-Only Infrastructure Coordination on Solana
                 </p>
                 <p className="mx-auto mt-8 max-w-lg text-[13px] leading-relaxed text-on-surface-variant/80">
                   Confidential draft for ecosystem review. Technical and economic
@@ -141,29 +141,26 @@ export default function WhitepaperPage() {
                     Executive Summary
                   </h2>
                   <p className="!mt-0 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
-                    M2M (Machine to Machine) is a Decentralized Physical Infrastructure
-                    Network (DePIN) built natively on Solana, designed to bridge the
-                    massive gap between accelerating EV adoption and lagging public
-                    infrastructure. By transforming idle residential and commercial
-                    charging stations into permissionless, monetizable nodes, M2M
-                    unlocks a global peer to peer energy grid. We facilitate
-                    trust minimized charging sessions routed through on chain escrow
-                    rails. We are seeking a{" "}
-                    <Money>$250,000 USD</Money> ecosystem grant to transition our V1
-                    architecture from devnet to mainnet, finalize our legal entity
-                    structuring, execute rigorous smart contract audits, and scale our
-                    engineering team for API integrations and protocol reliability.
+                    M2M (Machine to Machine) is software-only, API-driven DePIN
+                    middleware built natively on Solana. We connect existing smart
+                    chargers via OCPP cloud APIs with connected vehicles through
+                    enterprise APIs such as Tesla Fleet API—building the data bridge
+                    between physical energy infrastructure and on-chain smart contracts.
+                    We transform API-connected charging stations into permissionless,
+                    monetizable nodes settled in USDC with sub-second finality. Our V1
+                    web application and devnet escrow are live today; Phase 2 delivers
+                    enterprise API integrations and oracle middleware sandbox testing.
                   </p>
                   <p className="!mt-5 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
                     <strong className="font-semibold text-on-surface">
-                      Open source
+                      No custom hardware required.
                     </strong>{" "}
-                    M2M is developed in the open: the application and protocol
-                    reference implementations are released (or will be released)
-                    under an open source license, with public repositories linked
-                    from official channels as they are published. This grant proposal
-                    and the developer documentation describe the same public facing
-                    architecture.
+                    If it has an API, it can join the network. M2M is developed in the
+                    open: the application and protocol reference implementations are
+                    released (or will be released) under an open source license, with
+                    public repositories linked from official channels as they are
+                    published. This proposal and the developer documentation describe
+                    the same public-facing architecture.
                   </p>
                 </section>
 
@@ -193,14 +190,16 @@ export default function WhitepaperPage() {
                     Architecture and the dual verification oracle
                   </h2>
                   <p className="!mt-0 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
-                    The integrity of M2M depends on accurate metering and deterministic
-                    settlement rules rather than discretionary manual calls. Our design
-                    pairs a phased dual verification oracle with physical Proof of Presence.
+                    The integrity of M2M depends on cloud data reconciliation and
+                    deterministic settlement rules rather than discretionary manual
+                    calls. Our dual-verification oracle pairs Proof of Presence with
+                    real-time telemetry from charger and vehicle enterprise APIs.
                   </p>
                   <p className="!mt-5 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
-                    Current V1 demonstrates staged QR authenticated session flow and
-                    escrow life cycle foundations. Full live OEM and charger telemetry
-                    reconciliation is integrated as the next protocol phase.
+                    V1 demonstrates QR-authenticated session flow and devnet escrow
+                    lifecycle. Phase 2 integrates Tesla Fleet API and OCPP charger
+                    cloud pipelines—the oracle middleware sandbox reconciles energy
+                    output against battery intake before Anchor escrow releases USDC.
                   </p>
                   <div className="not-prose my-10 space-y-5">
                     {architecturePillars.map((pillar) => (
@@ -223,11 +222,12 @@ export default function WhitepaperPage() {
 
                 <section>
                   <h2 className="!mt-0 !mb-6 border-b border-white/[0.06] pb-4 font-headline text-xl font-bold tracking-tight text-on-surface sm:text-2xl md:!mb-8 md:text-[1.375rem] md:leading-snug">
-                    Grant deployment and engineering roadmap
+                    Engineering roadmap
                   </h2>
                   <p className="!mt-0 text-[15px] leading-[1.85] sm:text-base md:leading-[1.82]">
-                    To realize the DePIN vision, our roadmap is structured into three
-                    distinct phases of execution:
+                    Our roadmap is structured into three phases of middleware
+                    execution—from live devnet escrow through enterprise API
+                    integrations to mainnet-beta and mobile rollout:
                   </p>
                   <div className="not-prose mt-10 space-y-12 md:space-y-14">
                     {roadmapPhases.map((phase, phaseIdx) => (

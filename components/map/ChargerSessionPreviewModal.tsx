@@ -199,7 +199,7 @@ export function ChargerSessionPreviewModal({
             <strong className="font-headline text-on-surface">How billing will work:</strong>{" "}
             Real time kWh reconciliation will connect to charger and vehicle APIs once partners
             onboard. This milestone demonstrates wallet escrow, session intent state, and host QR
-            verification—not live hardware telemetry yet.
+            verification—not live cloud API telemetry yet.
           </div>
 
           <dl className="grid gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm">

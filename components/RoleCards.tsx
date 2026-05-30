@@ -1,20 +1,22 @@
 "use client";
 
-import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { AccountChoiceModal } from "@/components/auth/AccountChoiceModal";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { CreateAccountPromptModal } from "@/components/auth/CreateAccountPromptModal";
 
 export function RoleCards() {
   const router = useRouter();
-  const { connected } = useWallet();
   const { session } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   const go = (target: "driver" | "host") => {
-    const path = target === "driver" ? "/charge" : "/host";
-    if (session || connected) {
+    if (target === "driver") {
+      router.push("/#map");
+      return;
+    }
+    const path = "/profile";
+    if (session) {
       router.push(path);
       return;
     }
@@ -37,8 +39,9 @@ export function RoleCards() {
                 I need to charge.
               </h2>
               <p className="text-base leading-relaxed text-on-surface-variant sm:text-lg">
-                Connect your Solana wallet, locate a nearby M2M host, lock your
-                payment in escrow, and plug in. Clear pricing and no hidden fees.
+                Find API-connected chargers on the map, lock session funds in
+                Solana escrow, and settle in USDC once cloud telemetry reconciles.
+                Clear pricing with no rent-taking middle operator.
               </p>
               <button
                 type="button"
@@ -64,9 +67,10 @@ export function RoleCards() {
                 I have a charger.
               </h2>
               <p className="text-base leading-relaxed text-on-surface-variant sm:text-lg">
-                List your home EV charger on the M2M network. In this version,
-                session authorization and escrow are live. Full automated charger
-                and vehicle API telemetry is rolling out in phases.
+                List OCPP-connected smart chargers on the M2M middleware layer.
+                Session authorization and devnet escrow are live today; enterprise
+                API oracle reconciliation rolls out in Phase 2. No custom hardware
+                required.
               </p>
               <button
                 type="button"
@@ -83,9 +87,10 @@ export function RoleCards() {
         </div>
       </section>
 
-      <AccountChoiceModal
+      <CreateAccountPromptModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+        nextPath="/profile"
       />
     </>
   );

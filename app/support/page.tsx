@@ -11,8 +11,8 @@ const FAQS = [
     a: "Payout timing follows the escrow program and session outcome you approve in wallet. Drivers commit estimated USDC on chain during the handshake, and reconciliation continues to tighten as charger cloud and OEM APIs connect. Near term you should treat earnings as routed through escrow rules visible at signing time rather than instantaneous automatic metering from legacy payment rails.",
   },
   {
-    q: "Is it safe to list my home charger on the network?",
-    a: "We design sessions around proof of presence. A driver must be at your location and scan the session QR you show from your dashboard before payment continuation. That lowers remote spoofing risk and binds intent to real world presence alongside our API roadmap for telemetry.",
+    q: "Is it safe to list my OCPP-connected charger on the network?",
+    a: "We design sessions around proof of presence. A driver must be at your location and scan the session QR you show from your dashboard before payment continuation. That lowers remote spoofing risk and binds intent to real-world presence alongside our oracle middleware for cloud API telemetry reconciliation.",
   },
   {
     q: "How does the QR code authentication work?",

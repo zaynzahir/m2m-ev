@@ -31,25 +31,25 @@ const PROTOCOL_STEPS = [
   {
     title: "On chain handshake and escrow lock",
     paragraphs: [
-      "The session begins before a single kilowatt is transferred. When a driver selects a host charger on the M2M map, they start the handshake. Estimated session funds are routed into Solana escrow as part of the live flow while we expand metering in later phases. The goal is predictable terms for hosts and protected funds for drivers without a rent taking middle operator.",
+      "The session begins before a single kilowatt is transferred. When a driver selects a listed charger on the M2M map, they start the handshake. Estimated session funds route into Solana Anchor escrow as part of the live V1 flow. The middleware layer establishes predictable terms for hosts and protected funds for drivers—no rent-taking middle operator.",
     ],
   },
   {
     title: "Scan to authenticate (Proof of Presence)",
     paragraphs: [
-      "To deter spoofing, M2M requires physical Proof of Presence before payment flow continues. Through the dashboard, the charger owner generates a session QR. The driver scans on site and the flow advances after the scan matches this listing. This stays compatible with API first charger and vehicle integrations as telemetry rolls out.",
+      "To deter spoofing, M2M requires Proof of Presence before payment flow continues. Through the dashboard, the charger owner generates a session QR. The driver scans on site and the flow advances after the scan matches this listing. This complements cloud API reconciliation: software intent tied to a real-world location while enterprise telemetry hardens settlement.",
     ],
   },
   {
-    title: "Dual verification oracle and energy delivery",
+    title: "Dual-verification oracle and energy delivery",
     paragraphs: [
-      "While energy is delivered, M2M tracks staged session state in app. The roadmap adds full telemetry reconciliation via a dual verification oracle that compares charger cloud reports with vehicle side signals. That step comes after the MVP QR plus escrow rails are stable.",
+      "While energy is delivered, our oracle pulls real-time energy output data from the charger's cloud API (OCPP and compatible backends) and matches it against the vehicle's real-time battery intake API (e.g. Tesla Fleet API). Once the data reconciles, the Solana Anchor escrow instantly releases USDC. No custom hardware required—if it has an API, it can join the network.",
     ],
   },
   {
     title: "Fast settlement and the DePIN loop",
     paragraphs: [
-      "When a session completes, escrow and settlement complete the lifecycle. Solana aims for rapid finality at low fees with transparent attribution to hosts and protection for drivers. This is the economic loop that scales listed chargers into verifiable participation in the network.",
+      "When cloud telemetry matches and session rules pass, escrow completes with sub-second Solana finality at low fees. Transparent attribution flows to hosts while drivers retain custody. This is the economic loop that scales API-connected infrastructure into verifiable DePIN participation.",
     ],
   },
 ] as const;
@@ -58,7 +58,7 @@ const LOOP_NODES = [
   {
     icon: "ev_station",
     label: "Host lists charger",
-    detail: "DePIN node on the map",
+    detail: "OCPP cloud API node",
   },
   {
     icon: "lock",
@@ -147,33 +147,36 @@ export default function HowItWorksPage() {
 
           <section className="mx-auto mb-20 max-w-3xl md:mb-24">
             <p className="text-left text-[15px] leading-[1.85] text-on-surface-variant sm:text-lg">
-              M2M (Machine to Machine) is a DePIN protocol on Solana that connects EV
-              drivers with residential charging capacity. The experience centers on a
-              closed loop: discovery on the map, commitment before energy flows,{" "}
+              M2M (Machine to Machine) is software-only, API-driven DePIN middleware
+              on Solana. We connect existing smart chargers via OCPP cloud APIs with
+              connected vehicles through enterprise APIs such as Tesla Fleet API—building
+              the data bridge between physical infrastructure and on-chain settlement.
+              The experience centers on a closed loop: discovery on the map, commitment
+              before energy flows,{" "}
               <strong className="font-semibold text-on-surface">
                 QR code authentication
               </strong>{" "}
-              to prove the driver is physically present, phased dual verification of
-              energy delivery through APIs, and settlement back to participants&apos;
-              wallets.
+              to prove the driver is at the node, dual-verification oracle reconciliation
+              from cloud telemetry, and USDC settlement with sub-second finality.
               Together, these stages form the{" "}
               <strong className="font-semibold text-on-surface">
                 M2M decentralized power loop
               </strong>
-              : idle home infrastructure becomes verifiable, monetizable infrastructure,
-              while drivers gain trusted access without surrendering custody to a
-              traditional platform.
+              : API-connected charging infrastructure becomes verifiable, monetizable
+              middleware, while drivers gain trusted access without surrendering custody
+              to a traditional platform.
             </p>
             <p className="mt-5 text-left text-[15px] leading-[1.85] text-on-surface-variant sm:text-lg">
               The{" "}
               <strong className="font-semibold text-on-surface">
-                Scan to authenticate
+                dual-verification oracle
               </strong>{" "}
-              layer is central to our security model. Session bound QR codes tie a
-              charging session to a real world location, closing the gap between
-              software intent and physical plug in. Combined with API backed metering
-              from charger clouds and vehicle OEM platforms, the protocol minimizes
-              fraud risk and aligns settlement with delivered energy over time.
+              is central to our settlement model. Real-time energy output from the
+              charger&apos;s cloud API is matched against the vehicle&apos;s battery
+              intake API. When the data reconciles, Anchor escrow releases USDC
+              instantly. Combined with session-bound QR proof of presence, the protocol
+              minimizes fraud risk and aligns settlement with delivered energy. No custom
+              hardware required—if it has an API, it can join the network.
             </p>
           </section>
 
@@ -189,9 +192,9 @@ export default function HowItWorksPage() {
             </h2>
             <p className="mx-auto mb-10 max-w-3xl text-center text-[15px] leading-[1.8] text-on-surface-variant sm:text-base">
               From listing to payout, each stage reinforces the next: commitment before
-              consumption, presence before power, verification before settlement, and
-              fast finality on chain so the network compounds with every successful
-              session.
+              consumption, cloud telemetry reconciliation before settlement, and
+              sub-second Solana finality so the middleware layer compounds with every
+              successful session.
             </p>
             <div className="relative rounded-3xl border border-white/10 bg-surface-container-low/60 p-6 shadow-[0_0_60px_rgba(0,0,0,0.35)] backdrop-blur-sm sm:p-8">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:gap-3">
@@ -233,9 +236,9 @@ export default function HowItWorksPage() {
               Protocol mechanics
             </h2>
             <p className="mx-auto mb-12 max-w-2xl text-center text-sm leading-relaxed text-on-surface-variant sm:text-base">
-              Four integrated stages take a session from map selection to settled payment.
-              Together they define trust, presence, measurement, and economic closure
-              for peer to peer charging.
+              Four integrated stages take a session from map selection to settled USDC.
+              Together they define trust, cloud reconciliation, and economic closure for
+              API-connected charging.
             </p>
             <div className="relative">
               <div
