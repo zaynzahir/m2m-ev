@@ -1,8 +1,15 @@
 import Link from "next/link";
 
+import { getPublicM2MMint, getTokenMarketLinks } from "@/lib/constants/token";
+
 const GITHUB_REPO = "https://github.com/zaynzahir/m2m-ev";
 
 export function Footer() {
+  const mint = getPublicM2MMint();
+  const markets = getTokenMarketLinks(mint).filter((l) =>
+    ["dexscreener", "jupiter", "solscan", "pumpfun"].includes(l.id),
+  );
+
   return (
     <footer className="mt-12 w-full border-t border-[#f0edf1]/10 bg-[#0e0e11] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-8 md:flex-row md:items-center sm:px-8 lg:px-12">
@@ -15,6 +22,25 @@ export function Footer() {
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm font-medium text-[#f0edf1]/50">
+          <Link
+            href="/#token"
+            className="transition-colors hover:text-[#b984ff]"
+          >
+            $M2M
+          </Link>
+          {markets.map((m) =>
+            m.href ? (
+              <a
+                key={m.id}
+                className="transition-colors hover:text-[#b984ff]"
+                href={m.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {m.label}
+              </a>
+            ) : null,
+          )}
           <Link
             href="/privacy/"
             className="transition-colors hover:text-[#b984ff]"

@@ -23,6 +23,7 @@ export function Navbar() {
 
   const links = useMemo(() => {
     const base: { href: string; label: string }[] = [
+      { href: "/#token", label: "$M2M" },
       { href: "/how-it-works", label: "How it Works" },
       { href: "/whitepaper", label: "Whitepaper" },
       { href: "/docs", label: "Docs" },
