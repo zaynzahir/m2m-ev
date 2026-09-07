@@ -137,32 +137,20 @@ export function TokenLaunchSection() {
             </p>
 
             <div className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5">
-              <p className="mb-2 font-headline text-[11px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">
-                Contract address
-              </p>
-              {hasMint && mint ? (
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <code className="break-all font-mono text-sm text-primary sm:text-[0.9375rem]">
-                    <span className="sm:hidden">{shortenMint(mint, 8, 8)}</span>
-                    <span className="hidden sm:inline">{mint}</span>
-                  </code>
-                  <CopyContractButton mint={mint} />
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="font-mono text-sm text-on-surface-variant">
-                    Pending — set{" "}
-                    <span className="text-primary">NEXT_PUBLIC_M2M_TOKEN_MINT</span>{" "}
-                    after pump.fun create
-                  </p>
-                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs font-bold text-on-surface-variant">
-                    <span className="material-symbols-outlined text-base">
-                      hourglass_empty
-                    </span>
-                    Soon
-                  </span>
-                </div>
-              )}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="min-w-0 break-all font-mono text-sm text-on-surface sm:text-[0.9375rem]">
+                  <span className="font-headline text-[11px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">
+                    Contract address:
+                  </span>{" "}
+                  {hasMint && mint ? (
+                    <code className="text-primary">
+                      <span className="sm:hidden">{shortenMint(mint, 8, 8)}</span>
+                      <span className="hidden sm:inline">{mint}</span>
+                    </code>
+                  ) : null}
+                </p>
+                {hasMint && mint ? <CopyContractButton mint={mint} /> : null}
+              </div>
             </div>
           </div>
 
