@@ -1,11 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import { TokenContractCard } from "@/components/token/TokenContractCard";
 
 const FAQS = [
+  {
+    q: "What is M2M?",
+    a: "M2M (Machine to Machine) is software-only, API-driven DePIN middleware on Solana. We connect existing smart chargers via OCPP cloud APIs with connected vehicles through enterprise APIs such as Tesla Fleet API—no custom hardware required. If it has an API, it can join the network.",
+  },
+  {
+    q: "Where is the $M2M contract address?",
+    a: "The official contract address is published on the m2m.energy homepage under Contract address. Always verify the mint against m2m.energy before trading. Charts and markets: Dexscreener, Jupiter, Solscan, and pump.fun.",
+  },
   {
     q: "How do I get paid as a host?",
     a: "Payout timing follows the escrow program and session outcome you approve in wallet. Drivers commit estimated USDC on chain during the handshake, and reconciliation continues to tighten as charger cloud and OEM APIs connect. Near term you should treat earnings as routed through escrow rules visible at signing time rather than instantaneous automatic metering from legacy payment rails.",
@@ -44,8 +54,8 @@ export default function SupportPage() {
             Support
           </h1>
           <p className="max-w-2xl text-[15px] leading-relaxed text-on-surface-variant sm:text-base">
-            Clear answers on payments, safety, QR authorization, sessions, and wallets.
-            Open one question at a time. Need more help email{" "}
+            Clear answers on $M2M, payments, safety, QR authorization, sessions, and
+            wallets. Open one question at a time. Need more help email{" "}
             <a
               href="mailto:info@m2m.energy"
               className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
@@ -55,6 +65,20 @@ export default function SupportPage() {
             .
           </p>
         </header>
+
+        <div className="mb-10">
+          <TokenContractCard variant="full" />
+          <p className="mt-3 text-xs text-on-surface-variant/80">
+            Prefer the full token section?{" "}
+            <Link
+              href="/#token"
+              className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
+            >
+              Go to $M2M on the homepage
+            </Link>
+            .
+          </p>
+        </div>
 
         <div className="space-y-3 md:space-y-4">
           {FAQS.map((item, i) => {
@@ -69,9 +93,7 @@ export default function SupportPage() {
                   id={`faq-${i}-button`}
                   aria-expanded={isOpen}
                   aria-controls={`faq-${i}-panel`}
-                  onClick={() =>
-                    setOpenIndex(isOpen ? null : i)
-                  }
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors md:px-6 md:py-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   <span className="pr-2 font-headline text-base font-bold leading-snug text-on-surface md:text-lg">
