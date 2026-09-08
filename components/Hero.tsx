@@ -21,7 +21,7 @@ export function Hero() {
       <p className="max-w-3xl text-base leading-relaxed text-on-surface-variant sm:text-lg md:text-xl">
         M2M is software-only, API-driven DePIN middleware on Solana. We connect
         existing smart chargers via OCPP cloud APIs with connected vehicles through
-        enterprise APIs such as Tesla Fleet API—no custom hardware required.
+        enterprise APIs such as Tesla Fleet API. No custom hardware required.
         Discover sessions on the map, reconcile cloud telemetry, and settle in USDC
         with sub-second finality.
       </p>

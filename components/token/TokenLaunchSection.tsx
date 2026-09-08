@@ -265,9 +265,11 @@ export function TokenLaunchSection() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-10">
-          <TokenLiveChart />
-        </div>
+        {hasMint ? (
+          <div className="mt-12 border-t border-white/10 pt-10">
+            <TokenLiveChart />
+          </div>
+        ) : null}
       </div>
     </section>
   );
