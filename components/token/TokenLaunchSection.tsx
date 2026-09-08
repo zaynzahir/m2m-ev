@@ -231,6 +231,36 @@ export function TokenLaunchSection() {
               Always verify the mint against this page before trading. Links open
               the Solana venues listed above once the contract is published.
             </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <a
+                href="https://x.com/m2m_energy?s=11"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-on-surface transition hover:border-primary/35 hover:text-primary"
+              >
+                <span className="relative inline-flex h-5 w-5 items-center justify-center overflow-hidden rounded-md bg-[#0a0a0c] ring-1 ring-white/15">
+                  <Image
+                    src="/logo/svg/x.svg"
+                    alt=""
+                    width={14}
+                    height={14}
+                    className="object-contain"
+                  />
+                </span>
+                X
+              </a>
+              <a
+                href="https://m2m.energy"
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-on-surface transition hover:border-primary/35 hover:text-primary"
+              >
+                <PlatformLogo
+                  src="/logo/m2m-token.png"
+                  alt=""
+                  size={22}
+                />
+                Website
+              </a>
+            </div>
           </div>
         </div>
       </div>
