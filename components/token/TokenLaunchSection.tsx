@@ -139,7 +139,7 @@ export function TokenLaunchSection() {
                   src={item.logoSrc}
                   alt={item.text}
                   darkPad={item.darkPad}
-                  size={30}
+                  size={36}
                 />
               ) : (
                 <span
@@ -190,9 +190,9 @@ export function TokenLaunchSection() {
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-relaxed text-on-surface-variant sm:text-base">
-              Official contract address, charts, and Solana market venues. Track
-              ${M2M_TOKEN_TICKER} on Dexscreener, trade via Jupiter or Raydium,
-              and verify the mint on Solscan.
+              Official contract address and live pump.fun chart. After Create,
+              set the mint in Vercel and redeploy. Dexscreener can be enabled
+              later after graduation.
             </p>
 
             <div className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5">

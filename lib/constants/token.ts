@@ -1,6 +1,6 @@
 /**
  * $M2M Solana token public config for the landing page.
- * Set NEXT_PUBLIC_M2M_TOKEN_MINT after creating the token on pump.fun.
+ * Launch flow: set NEXT_PUBLIC_M2M_TOKEN_MINT in Vercel → redeploy → CA + pump.fun chart appear.
  */
 
 export const M2M_TOKEN_TICKER = "M2M";
@@ -10,23 +10,35 @@ export const M2M_TOKEN_NAME = "M2M Network";
 const M2M_TOKEN_MINT = process.env.NEXT_PUBLIC_M2M_TOKEN_MINT;
 const M2M_PUMPFUN_URL = process.env.NEXT_PUBLIC_M2M_PUMPFUN_URL;
 const M2M_DEXSCREENER_PAIR = process.env.NEXT_PUBLIC_M2M_DEXSCREENER_PAIR;
+const M2M_SHOW_DEXSCREENER_CHART =
+  process.env.NEXT_PUBLIC_M2M_SHOW_DEXSCREENER_CHART;
 
 export function getPublicM2MMint(): string | null {
   const raw = M2M_TOKEN_MINT?.trim();
   return raw && raw.length > 0 ? raw : null;
 }
 
-/** Pair address if mint alone isn't enough for the embed (optional). */
+export function getPumpFunCoinUrl(mint: string | null): string | null {
+  if (!mint) return null;
+  const custom = M2M_PUMPFUN_URL?.trim();
+  if (custom) return custom;
+  return `https://pump.fun/coin/${mint}`;
+}
+
+/** Pair address if mint alone isn't enough for Dexscreener (optional, post-graduate). */
 export function getDexscreenerPairAddress(): string | null {
   const raw = M2M_DEXSCREENER_PAIR?.trim();
   return raw && raw.length > 0 ? raw : null;
 }
 
-/**
- * Live chart embed. Prefer explicit pair; fall back to mint (works for most
- * pump.fun / Solana listings on Dexscreener within minutes of create).
- */
+/** Opt-in after graduation: set NEXT_PUBLIC_M2M_SHOW_DEXSCREENER_CHART=1 */
+export function shouldShowDexscreenerChart(): boolean {
+  const raw = M2M_SHOW_DEXSCREENER_CHART?.trim().toLowerCase();
+  return raw === "1" || raw === "true" || raw === "yes";
+}
+
 export function getDexscreenerEmbedUrl(mint: string | null): string | null {
+  if (!shouldShowDexscreenerChart()) return null;
   const pair = getDexscreenerPairAddress();
   const id = pair || mint;
   if (!id) return null;
@@ -61,13 +73,18 @@ export type TokenMarketLink = {
   alwaysShow?: boolean;
 };
 
-/** Build market / explorer links once mint is known. */
+/** Build market / explorer links once mint is known. pump.fun first. */
 export function getTokenMarketLinks(mint: string | null): TokenMarketLink[] {
-  const pumpFunBase =
-    M2M_PUMPFUN_URL?.trim() ||
-    (mint ? `https://pump.fun/coin/${mint}` : "https://pump.fun");
+  const pumpFunBase = getPumpFunCoinUrl(mint) || "https://pump.fun";
 
   return [
+    {
+      id: "pumpfun",
+      label: "pump.fun",
+      href: pumpFunBase,
+      logoSrc: "/logo/pumpfun.png",
+      alwaysShow: true,
+    },
     {
       id: "dexscreener",
       label: "Dexscreener",
@@ -111,13 +128,6 @@ export function getTokenMarketLinks(mint: string | null): TokenMarketLink[] {
       logoSrc: "/logo/solscan.png",
       alwaysShow: true,
     },
-    {
-      id: "pumpfun",
-      label: "pump.fun",
-      href: pumpFunBase,
-      logoSrc: "/logo/pumpfun.png",
-      alwaysShow: true,
-    },
   ];
 }
 
@@ -134,6 +144,11 @@ export const TOKEN_TICKER_ITEMS: TokenTickerItem[] = [
     text: "$M2M",
     tone: "primary",
     logoSrc: "/logo/m2m-token.png",
+  },
+  {
+    text: "pump.fun",
+    tone: "primary",
+    logoSrc: "/logo/pumpfun.png",
   },
   {
     text: "Solana",
@@ -166,11 +181,6 @@ export const TOKEN_TICKER_ITEMS: TokenTickerItem[] = [
     text: "Solscan",
     tone: "muted",
     logoSrc: "/logo/solscan.png",
-  },
-  {
-    text: "pump.fun",
-    tone: "muted",
-    logoSrc: "/logo/pumpfun.png",
   },
   {
     text: "API-driven DePIN",

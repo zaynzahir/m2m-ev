@@ -49,7 +49,7 @@ export function TokenContractCard({
 }: TokenContractCardProps) {
   const mint = getPublicM2MMint();
   const links = getTokenMarketLinks(mint).filter((l) =>
-    ["dexscreener", "jupiter", "solscan", "pumpfun"].includes(l.id),
+    ["pumpfun", "dexscreener", "jupiter", "solscan"].includes(l.id),
   );
 
   return (
@@ -74,9 +74,9 @@ export function TokenContractCard({
       {variant === "full" ? (
         <div className="mt-4 space-y-3 border-t border-white/10 pt-4">
           <p className="text-sm leading-relaxed text-on-surface-variant">
-            ${M2M_TOKEN_TICKER} is the Solana token for M2M Network—software-only,
-            API-driven DePIN middleware. Track charts on Dexscreener, trade via
-            Jupiter, and verify the mint on Solscan. Official site:{" "}
+            ${M2M_TOKEN_TICKER} is the Solana token for M2M Network: software-only,
+            API-driven DePIN middleware. Trade on pump.fun first, then Dexscreener
+            after graduation. Official site:{" "}
             <Link href="/#token" className="font-semibold text-primary hover:underline">
               m2m.energy/#token
             </Link>
