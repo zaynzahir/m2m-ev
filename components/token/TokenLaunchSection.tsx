@@ -11,6 +11,7 @@ import {
   shortenMint,
   TOKEN_TICKER_ITEMS,
 } from "@/lib/constants/token";
+import { TokenLiveChart } from "@/components/token/TokenLiveChart";
 
 function PlatformLogo({
   src,
@@ -262,6 +263,10 @@ export function TokenLaunchSection() {
               </a>
             </div>
           </div>
+        </div>
+
+        <div className="mt-12 border-t border-white/10 pt-10">
+          <TokenLiveChart />
         </div>
       </div>
     </section>

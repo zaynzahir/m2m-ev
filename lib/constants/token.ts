@@ -9,10 +9,41 @@ export const M2M_TOKEN_NAME = "M2M Network";
 /** Must stay a direct NEXT_PUBLIC_* read so Next can inline it for the client. */
 const M2M_TOKEN_MINT = process.env.NEXT_PUBLIC_M2M_TOKEN_MINT;
 const M2M_PUMPFUN_URL = process.env.NEXT_PUBLIC_M2M_PUMPFUN_URL;
+const M2M_DEXSCREENER_PAIR = process.env.NEXT_PUBLIC_M2M_DEXSCREENER_PAIR;
 
 export function getPublicM2MMint(): string | null {
   const raw = M2M_TOKEN_MINT?.trim();
   return raw && raw.length > 0 ? raw : null;
+}
+
+/** Pair address if mint alone isn't enough for the embed (optional). */
+export function getDexscreenerPairAddress(): string | null {
+  const raw = M2M_DEXSCREENER_PAIR?.trim();
+  return raw && raw.length > 0 ? raw : null;
+}
+
+/**
+ * Live chart embed. Prefer explicit pair; fall back to mint (works for most
+ * pump.fun / Solana listings on Dexscreener within minutes of create).
+ */
+export function getDexscreenerEmbedUrl(mint: string | null): string | null {
+  const pair = getDexscreenerPairAddress();
+  const id = pair || mint;
+  if (!id) return null;
+  const params = new URLSearchParams({
+    embed: "1",
+    theme: "dark",
+    trades: "0",
+    info: "0",
+  });
+  return `https://dexscreener.com/solana/${id}?${params.toString()}`;
+}
+
+export function getDexscreenerPageUrl(mint: string | null): string | null {
+  const pair = getDexscreenerPairAddress();
+  const id = pair || mint;
+  if (!id) return null;
+  return `https://dexscreener.com/solana/${id}`;
 }
 
 export function shortenMint(mint: string, lead = 6, trail = 6): string {
