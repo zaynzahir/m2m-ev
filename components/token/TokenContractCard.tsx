@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useState } from "react";
 import Link from "next/link";
 
@@ -38,7 +39,6 @@ function CopyContractButton({ mint }: { mint: string }) {
 }
 
 type TokenContractCardProps = {
-  /** Compact = label + CA only; full adds short blurb + market chips */
   variant?: "compact" | "full";
   className?: string;
 };
@@ -90,8 +90,23 @@ export function TokenContractCard({
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-on-surface transition hover:border-primary/35 hover:text-primary"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-on-surface transition hover:border-primary/35 hover:text-primary"
                 >
+                  <span
+                    className={`relative inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-md ${
+                      link.darkPad
+                        ? "bg-[#0a0a0c] ring-1 ring-white/15"
+                        : "bg-white/[0.06] ring-1 ring-white/10"
+                    }`}
+                  >
+                    <Image
+                      src={link.logoSrc}
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="h-full w-full object-contain p-0.5"
+                    />
+                  </span>
                   {link.label}
                   <span className="material-symbols-outlined text-sm opacity-70">
                     open_in_new

@@ -24,6 +24,9 @@ export type TokenMarketLink = {
   id: string;
   label: string;
   href: string | null;
+  logoSrc: string;
+  /** White / light logos need a dark pad to stay visible */
+  darkPad?: boolean;
   alwaysShow?: boolean;
 };
 
@@ -40,6 +43,8 @@ export function getTokenMarketLinks(mint: string | null): TokenMarketLink[] {
       href: mint
         ? `https://dexscreener.com/solana/${mint}`
         : "https://dexscreener.com/solana",
+      logoSrc: "/logo/images-removebg-preview.png",
+      darkPad: true,
       alwaysShow: true,
     },
     {
@@ -48,12 +53,15 @@ export function getTokenMarketLinks(mint: string | null): TokenMarketLink[] {
       href: mint
         ? `https://birdeye.so/token/${mint}?chain=solana`
         : "https://birdeye.so",
+      logoSrc: "/logo/birdeye.png",
+      darkPad: true,
       alwaysShow: true,
     },
     {
       id: "jupiter",
       label: "Jupiter",
       href: mint ? `https://jup.ag/swap/SOL-${mint}` : "https://jup.ag",
+      logoSrc: "/logo/jupiter.png",
       alwaysShow: true,
     },
     {
@@ -62,33 +70,84 @@ export function getTokenMarketLinks(mint: string | null): TokenMarketLink[] {
       href: mint
         ? `https://raydium.io/swap/?inputMint=sol&outputMint=${mint}`
         : "https://raydium.io/swap/",
+      logoSrc: "/logo/raydium.png",
       alwaysShow: true,
     },
     {
       id: "solscan",
       label: "Solscan",
       href: mint ? `https://solscan.io/token/${mint}` : "https://solscan.io",
+      logoSrc: "/logo/solscan.png",
       alwaysShow: true,
     },
     {
       id: "pumpfun",
       label: "pump.fun",
       href: pumpFunBase,
+      logoSrc: "/logo/pumpfun.png",
       alwaysShow: true,
     },
   ];
 }
 
-/** Scrolling ticker items — network pulse + ecosystem names. */
-export const TOKEN_TICKER_ITEMS = [
-  { text: "$M2M live on Solana", tone: "primary" as const },
-  { text: "Dexscreener", tone: "muted" as const },
-  { text: "Jupiter", tone: "muted" as const },
-  { text: "Raydium", tone: "muted" as const },
-  { text: "Birdeye", tone: "muted" as const },
-  { text: "Solscan", tone: "muted" as const },
-  { text: "pump.fun", tone: "muted" as const },
-  { text: "API-driven DePIN middleware", tone: "primary" as const },
-  { text: "Sub-second finality", tone: "muted" as const },
-  { text: "m2m.energy", tone: "primary" as const },
-] as const;
+export type TokenTickerItem = {
+  text: string;
+  tone: "primary" | "muted";
+  logoSrc?: string;
+  darkPad?: boolean;
+};
+
+/** Scrolling ticker items — logos + network pulse. */
+export const TOKEN_TICKER_ITEMS: TokenTickerItem[] = [
+  {
+    text: "$M2M",
+    tone: "primary",
+    logoSrc: "/logo/m2m-token.png",
+  },
+  {
+    text: "Solana",
+    tone: "primary",
+    logoSrc: "/logo/svg/solana.svg",
+  },
+  {
+    text: "Dexscreener",
+    tone: "muted",
+    logoSrc: "/logo/images-removebg-preview.png",
+    darkPad: true,
+  },
+  {
+    text: "Jupiter",
+    tone: "muted",
+    logoSrc: "/logo/jupiter.png",
+  },
+  {
+    text: "Raydium",
+    tone: "muted",
+    logoSrc: "/logo/raydium.png",
+  },
+  {
+    text: "Birdeye",
+    tone: "muted",
+    logoSrc: "/logo/birdeye.png",
+    darkPad: true,
+  },
+  {
+    text: "Solscan",
+    tone: "muted",
+    logoSrc: "/logo/solscan.png",
+  },
+  {
+    text: "pump.fun",
+    tone: "muted",
+    logoSrc: "/logo/pumpfun.png",
+  },
+  {
+    text: "API-driven DePIN",
+    tone: "primary",
+  },
+  {
+    text: "m2m.energy",
+    tone: "primary",
+    logoSrc: "/logo/m2m-token.png",
+  },
+];

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useState } from "react";
 
 import {
@@ -10,6 +11,37 @@ import {
   shortenMint,
   TOKEN_TICKER_ITEMS,
 } from "@/lib/constants/token";
+
+function PlatformLogo({
+  src,
+  alt,
+  darkPad,
+  size = 28,
+}: {
+  src: string;
+  alt: string;
+  darkPad?: boolean;
+  size?: number;
+}) {
+  return (
+    <span
+      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg ${
+        darkPad
+          ? "bg-[#0a0a0c] ring-1 ring-white/15"
+          : "bg-white/[0.06] ring-1 ring-white/10"
+      }`}
+      style={{ width: size, height: size }}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        width={size}
+        height={size}
+        className="h-full w-full object-contain p-1"
+      />
+    </span>
+  );
+}
 
 function CopyContractButton({ mint }: { mint: string }) {
   const [copied, setCopied] = useState(false);
@@ -41,21 +73,29 @@ function CopyContractButton({ mint }: { mint: string }) {
 function MarketLinkChip({
   label,
   href,
-  disabled,
+  logoSrc,
+  darkPad,
 }: {
   label: string;
   href: string | null;
-  disabled?: boolean;
+  logoSrc: string;
+  darkPad?: boolean;
 }) {
   const className =
-    "inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-semibold text-on-surface transition hover:border-primary/35 hover:text-primary";
+    "inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-on-surface transition hover:border-primary/35 hover:text-primary";
 
-  if (!href || disabled) {
-    return (
-      <span className={`${className} cursor-not-allowed opacity-45`}>
-        {label}
+  const inner = (
+    <>
+      <PlatformLogo src={logoSrc} alt="" darkPad={darkPad} size={22} />
+      {label}
+      <span className="material-symbols-outlined text-sm opacity-70">
+        open_in_new
       </span>
-    );
+    </>
+  );
+
+  if (!href) {
+    return <span className={`${className} cursor-not-allowed opacity-45`}>{inner}</span>;
   }
 
   return (
@@ -65,10 +105,7 @@ function MarketLinkChip({
       rel="noopener noreferrer"
       className={className}
     >
-      {label}
-      <span className="material-symbols-outlined text-sm opacity-70">
-        open_in_new
-      </span>
+      {inner}
     </a>
   );
 }
@@ -77,6 +114,7 @@ export function TokenLaunchSection() {
   const mint = getPublicM2MMint();
   const links = getTokenMarketLinks(mint);
   const hasMint = Boolean(mint);
+  const marqueeItems = [...TOKEN_TICKER_ITEMS, ...TOKEN_TICKER_ITEMS];
 
   return (
     <section
@@ -84,25 +122,33 @@ export function TokenLaunchSection() {
       aria-labelledby="token-heading"
       className="relative overflow-hidden border-y border-white/10 bg-surface-container-low/40"
     >
-      {/* Animated marquee */}
-      <div className="border-b border-white/5 bg-black/30 py-2.5">
-        <div className="m2m-token-marquee flex w-max items-center gap-8 whitespace-nowrap">
-          {[...TOKEN_TICKER_ITEMS, ...TOKEN_TICKER_ITEMS].map((item, i) => (
+      <div className="border-b border-white/5 bg-black/40 py-3">
+        <div className="m2m-token-marquee flex w-max items-center gap-10 whitespace-nowrap px-4">
+          {marqueeItems.map((item, i) => (
             <span
               key={`${item.text}-${i}`}
-              className={`inline-flex items-center gap-2 font-headline text-[11px] font-bold uppercase tracking-[0.18em] ${
+              className={`inline-flex items-center gap-2.5 font-headline text-[11px] font-bold uppercase tracking-[0.16em] ${
                 item.tone === "primary"
                   ? "text-primary"
-                  : "text-on-surface-variant/80"
+                  : "text-on-surface-variant/90"
               }`}
             >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  item.tone === "primary"
-                    ? "animate-pulse bg-primary shadow-[0_0_8px_rgba(52,254,160,0.8)]"
-                    : "bg-on-surface-variant/40"
-                }`}
-              />
+              {item.logoSrc ? (
+                <PlatformLogo
+                  src={item.logoSrc}
+                  alt={item.text}
+                  darkPad={item.darkPad}
+                  size={30}
+                />
+              ) : (
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    item.tone === "primary"
+                      ? "animate-pulse bg-primary shadow-[0_0_8px_rgba(52,254,160,0.8)]"
+                      : "bg-on-surface-variant/40"
+                  }`}
+                />
+              )}
               {item.text}
             </span>
           ))}
@@ -122,14 +168,26 @@ export function TokenLaunchSection() {
               </span>
             </div>
 
-            <h2
-              id="token-heading"
-              className="font-headline text-3xl font-extrabold tracking-tight text-on-surface sm:text-4xl"
-            >
-              ${M2M_TOKEN_TICKER}{" "}
-              <span className="text-on-surface-variant">·</span>{" "}
-              {M2M_TOKEN_NAME}
-            </h2>
+            <div className="flex items-center gap-4">
+              <span className="relative inline-flex h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-black ring-1 ring-white/15 sm:h-16 sm:w-16">
+                <Image
+                  src="/logo/m2m-token.png"
+                  alt="$M2M token"
+                  width={64}
+                  height={64}
+                  className="h-full w-full object-contain p-1.5"
+                  priority
+                />
+              </span>
+              <h2
+                id="token-heading"
+                className="font-headline text-3xl font-extrabold tracking-tight text-on-surface sm:text-4xl"
+              >
+                ${M2M_TOKEN_TICKER}{" "}
+                <span className="text-on-surface-variant">·</span>{" "}
+                {M2M_TOKEN_NAME}
+              </h2>
+            </div>
             <p className="max-w-xl text-sm leading-relaxed text-on-surface-variant sm:text-base">
               Official contract address, charts, and Solana market venues. Track
               ${M2M_TOKEN_TICKER} on Dexscreener, trade via Jupiter or Raydium,
@@ -164,6 +222,8 @@ export function TokenLaunchSection() {
                   key={link.id}
                   label={link.label}
                   href={link.href}
+                  logoSrc={link.logoSrc}
+                  darkPad={link.darkPad}
                 />
               ))}
             </div>
