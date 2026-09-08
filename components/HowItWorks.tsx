@@ -8,7 +8,7 @@ export function HowItWorks() {
           </h2>
           <p className="text-on-surface-variant max-w-2xl mx-auto">
             Software middleware that bridges physical energy infrastructure and
-            Solana smart contracts—if it has an API, it can join the network.
+            Solana smart contracts. If it has an API, it can join the network.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-12 relative">
@@ -22,7 +22,7 @@ export function HowItWorks() {
             <p className="text-on-surface-variant leading-relaxed px-4">
               Drivers and hosts connect through the map. Existing smart chargers
               (OCPP cloud) and connected vehicles (enterprise OEM APIs) register
-              as software nodes—no custom hardware deployment.
+              as software nodes. No custom hardware deployment.
             </p>
           </div>
           <div className="flex flex-col items-center text-center space-y-6 relative group">
@@ -49,7 +49,7 @@ export function HowItWorks() {
             </h3>
             <p className="text-on-surface-variant leading-relaxed px-4">
               Once cloud telemetry matches, the Solana Anchor escrow instantly
-              releases USDC with sub-second finality—transparent attribution for
+              releases USDC with sub-second finality. Transparent attribution for
               hosts and drivers.
             </p>
           </div>
