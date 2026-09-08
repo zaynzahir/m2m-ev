@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useId } from "react";
 
 import {
   getDexscreenerEmbedUrl,
@@ -9,79 +8,30 @@ import {
   getPublicM2MMint,
   getPumpFunCoinUrl,
   shouldShowDexscreenerChart,
+  shortenMint,
 } from "@/lib/constants/token";
 
-declare global {
-  interface Window {
-    createMyWidget?: (
-      containerId: string,
-      config: Record<string, unknown>,
-    ) => void;
-  }
+/** Solana mints are base58, not 0x EVM addresses. */
+function looksLikeSolanaMint(mint: string): boolean {
+  if (mint.startsWith("0x") || mint.startsWith("0X")) return false;
+  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(mint);
 }
 
 /**
- * Live chart appears only after NEXT_PUBLIC_M2M_TOKEN_MINT is set in Vercel.
- * Primary: pump.fun coin + Moralis chart widget (works on bonding curve).
- * Later: set NEXT_PUBLIC_M2M_SHOW_DEXSCREENER_CHART=1 after graduation.
+ * Live chart section appears only after NEXT_PUBLIC_M2M_TOKEN_MINT is set.
+ * pump.fun blocks iframes, so we show a pump.fun live panel (free) + Open button.
+ * After graduation, set NEXT_PUBLIC_M2M_SHOW_DEXSCREENER_CHART=1 for Dexscreener embed.
  */
 export function TokenLiveChart() {
   const mint = getPublicM2MMint();
-  const containerId = useId().replace(/:/g, "");
-  const chartContainerId = `m2m-pump-chart-${containerId}`;
-
   const pumpUrl = getPumpFunCoinUrl(mint);
   const showDex = shouldShowDexscreenerChart();
   const dexEmbed = getDexscreenerEmbedUrl(mint);
   const dexPage = getDexscreenerPageUrl(mint);
 
-  useEffect(() => {
-    if (!mint || showDex) return;
-
-    const loadWidget = () => {
-      if (typeof window.createMyWidget !== "function") return;
-      window.createMyWidget(chartContainerId, {
-        width: "100%",
-        height: "100%",
-        chainId: "solana",
-        tokenAddress: mint,
-        defaultInterval: "15",
-        timeZone:
-          Intl.DateTimeFormat().resolvedOptions().timeZone ?? "Etc/UTC",
-        theme: "moralis",
-        locale: "en",
-        backgroundColor: "#0a0a0c",
-        gridColor: "#1a1a1f",
-        textColor: "#9ca3af",
-        candleUpColor: "#34fea0",
-        candleDownColor: "#f87171",
-        hideLeftToolbar: false,
-        hideTopToolbar: false,
-        hideBottomToolbar: false,
-      });
-    };
-
-    const existing = document.getElementById("moralis-chart-widget");
-    if (existing) {
-      loadWidget();
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = "moralis-chart-widget";
-    script.src = "https://moralis.com/static/embed/chart.js";
-    script.async = true;
-    script.onload = loadWidget;
-    document.body.appendChild(script);
-
-    return () => {
-      // Keep script cached across navigations; only clear widget node content.
-      const node = document.getElementById(chartContainerId);
-      if (node) node.innerHTML = "";
-    };
-  }, [mint, showDex, chartContainerId]);
-
   if (!mint || !pumpUrl) return null;
+
+  const isSolana = looksLikeSolanaMint(mint);
 
   return (
     <div className="space-y-4">
@@ -119,13 +69,44 @@ export function TokenLiveChart() {
           />
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_0_40px_rgba(0,0,0,0.35)]">
-          <div
-            id={chartContainerId}
-            className="h-[420px] w-full sm:h-[520px]"
-            style={{ width: "100%", height: "100%", minHeight: 420 }}
-          />
-        </div>
+        <a
+          href={pumpUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-black via-[#0c1210] to-black shadow-[0_0_40px_rgba(0,0,0,0.35)] transition hover:border-primary/35"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(52,254,160,0.12),transparent_55%)]" />
+          <div className="relative flex min-h-[280px] flex-col items-center justify-center gap-5 px-6 py-12 text-center sm:min-h-[360px]">
+            <span className="relative inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-black ring-1 ring-white/15">
+              <Image
+                src="/logo/pumpfun.png"
+                alt="pump.fun"
+                width={56}
+                height={56}
+                className="object-contain p-1"
+              />
+            </span>
+            <div className="space-y-2">
+              <p className="font-headline text-xl font-extrabold text-on-surface sm:text-2xl">
+                Live chart &amp; trade on pump.fun
+              </p>
+              <p className="mx-auto max-w-md text-sm leading-relaxed text-on-surface-variant">
+                {isSolana
+                  ? "Open the official pump.fun coin page for the live bonding-curve chart and trading."
+                  : "Use your Solana mint from pump.fun (base58), not an 0x Ethereum address."}
+              </p>
+            </div>
+            {isSolana ? (
+              <code className="max-w-full break-all rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[11px] text-primary sm:text-xs">
+                {shortenMint(mint, 10, 10)}
+              </code>
+            ) : null}
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-headline text-sm font-bold text-on-primary-fixed shadow-[0_0_25px_rgba(52,254,160,0.3)] transition group-hover:brightness-110">
+              View live chart
+              <span className="material-symbols-outlined text-lg">open_in_new</span>
+            </span>
+          </div>
+        </a>
       )}
 
       {showDex && dexPage ? (
