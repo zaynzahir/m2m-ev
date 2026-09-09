@@ -11,17 +11,12 @@ import {
   shortenMint,
 } from "@/lib/constants/token";
 
-/** Solana mints are base58, not 0x EVM addresses. */
 function looksLikeSolanaMint(mint: string): boolean {
   if (mint.startsWith("0x") || mint.startsWith("0X")) return false;
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(mint);
 }
 
-/**
- * Live chart section appears only after NEXT_PUBLIC_M2M_TOKEN_MINT is set.
- * pump.fun blocks iframes, so we show a pump.fun live panel (free) + Open button.
- * After graduation, set NEXT_PUBLIC_M2M_SHOW_DEXSCREENER_CHART=1 for Dexscreener embed.
- */
+/** Live chart / trade panel. Only renders when mint env is configured. */
 export function TokenLiveChart() {
   const mint = getPublicM2MMint();
   const pumpUrl = getPumpFunCoinUrl(mint);
@@ -29,9 +24,7 @@ export function TokenLiveChart() {
   const dexEmbed = getDexscreenerEmbedUrl(mint);
   const dexPage = getDexscreenerPageUrl(mint);
 
-  if (!mint || !pumpUrl) return null;
-
-  const isSolana = looksLikeSolanaMint(mint);
+  if (!mint || !pumpUrl || !looksLikeSolanaMint(mint)) return null;
 
   return (
     <div className="space-y-4">
@@ -86,21 +79,12 @@ export function TokenLiveChart() {
                 className="object-contain p-1"
               />
             </span>
-            <div className="space-y-2">
-              <p className="font-headline text-xl font-extrabold text-on-surface sm:text-2xl">
-                Live chart &amp; trade on pump.fun
-              </p>
-              <p className="mx-auto max-w-md text-sm leading-relaxed text-on-surface-variant">
-                {isSolana
-                  ? "Open the official pump.fun coin page for the live bonding-curve chart and trading."
-                  : "Use your Solana mint from pump.fun (base58), not an 0x Ethereum address."}
-              </p>
-            </div>
-            {isSolana ? (
-              <code className="max-w-full break-all rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[11px] text-primary sm:text-xs">
-                {shortenMint(mint, 10, 10)}
-              </code>
-            ) : null}
+            <p className="font-headline text-xl font-extrabold text-on-surface sm:text-2xl">
+              Live chart &amp; trade on pump.fun
+            </p>
+            <code className="max-w-full break-all rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 font-mono text-[11px] text-primary sm:text-xs">
+              {shortenMint(mint, 10, 10)}
+            </code>
             <span className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-headline text-sm font-bold text-on-primary-fixed shadow-[0_0_25px_rgba(52,254,160,0.3)] transition group-hover:brightness-110">
               View live chart
               <span className="material-symbols-outlined text-lg">open_in_new</span>

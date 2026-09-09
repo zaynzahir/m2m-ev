@@ -75,8 +75,7 @@ export function TokenContractCard({
         <div className="mt-4 space-y-3 border-t border-white/10 pt-4">
           <p className="text-sm leading-relaxed text-on-surface-variant">
             ${M2M_TOKEN_TICKER} is the Solana token for M2M Network: software-only,
-            API-driven DePIN middleware. Trade on pump.fun first, then Dexscreener
-            after graduation. Official site:{" "}
+            API-driven DePIN middleware. Official markets and contract live on{" "}
             <Link href="/#token" className="font-semibold text-primary hover:underline">
               m2m.energy/#token
             </Link>

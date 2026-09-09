@@ -159,15 +159,17 @@ export function TokenLaunchSection() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-16">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14">
           <div className="space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-              </span>
-              <span className="font-headline text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                {hasMint ? "Token live on Solana" : "Token launch ready"}
-              </span>
-            </div>
+            {hasMint ? (
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                </span>
+                <span className="font-headline text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+                  Token live on Solana
+                </span>
+              </div>
+            ) : null}
 
             <div className="flex items-center gap-4">
               <span className="relative inline-flex h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-black ring-1 ring-white/15 sm:h-16 sm:w-16">
@@ -190,9 +192,7 @@ export function TokenLaunchSection() {
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-relaxed text-on-surface-variant sm:text-base">
-              Official contract address and live pump.fun chart. After Create,
-              set the mint in Vercel and redeploy. Dexscreener can be enabled
-              later after graduation.
+              Official $M2M contract address, live chart, and market links on Solana.
             </p>
 
             <div className="rounded-2xl border border-white/10 bg-black/35 p-4 sm:p-5">
@@ -229,8 +229,7 @@ export function TokenLaunchSection() {
               ))}
             </div>
             <p className="text-xs leading-relaxed text-on-surface-variant/80">
-              Always verify the mint against this page before trading. Links open
-              the Solana venues listed above once the contract is published.
+              Always verify the mint against this page before trading.
             </p>
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <a
