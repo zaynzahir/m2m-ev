@@ -27,13 +27,6 @@ export function HowItWorksCta() {
         Find a Charger
       </Link>
       <Link
-        href="/#token"
-        className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-8 py-4 font-headline text-sm font-bold text-primary shadow-[0_0_20px_rgba(52,254,160,0.12)] transition-all hover:bg-primary/15 sm:text-base"
-      >
-        <span className="material-symbols-outlined text-xl">token</span>
-        $M2M Token
-      </Link>
-      <Link
         href="/whitepaper"
         className="inline-flex items-center justify-center gap-2 rounded-full border border-secondary/50 bg-secondary/10 px-8 py-4 font-headline text-sm font-bold text-secondary shadow-[0_0_20px_rgba(185,132,255,0.15)] transition-all hover:border-secondary hover:bg-secondary/15 sm:text-base"
       >

@@ -1,7 +1,6 @@
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { HowItWorksCta } from "@/components/how-it-works/HowItWorksCta";
-import { TokenContractCard } from "@/components/token/TokenContractCard";
 
 const DEFAULT_LOCAL_VIDEO_URL = "/videos/how-it-works..mov";
 const HOW_IT_WORKS_VIDEO_URL =
@@ -99,11 +98,6 @@ export default function HowItWorksPage() {
             <h1 className="text-balance font-headline text-3xl font-extrabold tracking-tight text-on-surface sm:text-4xl md:text-5xl md:leading-[1.08]">
               How M2M powers the decentralized grid
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-on-surface-variant sm:text-base">
-              Software-only DePIN middleware on Solana—OCPP chargers, enterprise
-              vehicle APIs, dual-verification oracle, and on-chain settlement. Official{" "}
-              $M2M contract and markets live on the homepage.
-            </p>
           </header>
 
           {hasVideo ? (
@@ -184,9 +178,6 @@ export default function HowItWorksPage() {
               minimizes fraud risk and aligns settlement with delivered energy. No custom
               hardware required—if it has an API, it can join the network.
             </p>
-            <div className="mt-8">
-              <TokenContractCard variant="full" />
-            </div>
           </section>
 
           <section
@@ -291,8 +282,8 @@ export default function HowItWorksPage() {
                 Join the M2M network
               </p>
               <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-on-surface-variant sm:text-base">
-                Explore listings, check the $M2M contract on the homepage, onboard as a
-                host, or read the technical framing in our whitepaper. Questions:{" "}
+                Explore listings, onboard as a host, or read the technical and economic
+                framing in our whitepaper. Questions:{" "}
                 <a
                   href="mailto:info@m2m.energy"
                   className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"

@@ -59,25 +59,6 @@
   opacity: 0;
 }
 
-@keyframes m2m-token-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.m2m-token-marquee {
-  animation: m2m-token-marquee 28s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .m2m-token-marquee {
-    animation: none;
-  }
-}
-
 /* Solana Wallet Multi Button: match M2M primary pill */
 button.wallet-m2m-nav,
 button.wallet-m2m-primary {

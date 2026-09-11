@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
-import { TokenContractCard } from "@/components/token/TokenContractCard";
 
 function SectionDivider() {
   return (
@@ -157,24 +155,13 @@ export default function WhitepaperPage() {
                     <strong className="font-semibold text-on-surface">
                       No custom hardware required.
                     </strong>{" "}
-                    If it has an API, it can join the network. The $M2M Solana token
-                    represents the network brand on-chain; verify the official contract
-                    address on{" "}
-                    <Link
-                      href="/#token"
-                      className="font-semibold text-primary underline decoration-primary/40 underline-offset-2 hover:text-primary"
-                    >
-                      m2m.energy
-                    </Link>{" "}
-                    and track markets on Dexscreener, Jupiter, Solscan, and pump.fun.
-                    M2M is developed in the open: the application and protocol reference
-                    implementations are released (or will be released) under an open
-                    source license, with public repositories linked from official
-                    channels as they are published.
+                    If it has an API, it can join the network. M2M is developed in the
+                    open: the application and protocol reference implementations are
+                    released (or will be released) under an open source license, with
+                    public repositories linked from official channels as they are
+                    published. This proposal and the developer documentation describe
+                    the same public-facing architecture.
                   </p>
-                  <div className="not-prose my-8">
-                    <TokenContractCard variant="full" />
-                  </div>
                 </section>
 
                 <SectionDivider />

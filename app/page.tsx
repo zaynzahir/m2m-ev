@@ -1,6 +1,5 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
-import { TokenLaunchSection } from "@/components/token/TokenLaunchSection";
 import { MapSection } from "@/components/MapSection";
 import { RoleCards } from "@/components/RoleCards";
 import { HowItWorks } from "@/components/HowItWorks";
@@ -14,7 +13,6 @@ export default function Home() {
       <Navbar />
       <main className="space-y-16 pt-24 sm:space-y-24">
         <Hero />
-        <TokenLaunchSection />
         <MapSection id="map" />
         <RoleCards />
         <HowItWorks />

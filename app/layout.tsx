@@ -36,8 +36,6 @@ export const metadata: Metadata = {
     "Solana",
     "DePIN",
     "EV charging",
-    "pump.fun",
-    "$M2M",
   ],
   icons: {
     icon: [

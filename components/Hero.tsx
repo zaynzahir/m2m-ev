@@ -33,13 +33,6 @@ export function Hero() {
           <span className="material-symbols-outlined">search</span>
           Find a Charger
         </Link>
-        <Link
-          href="#token"
-          className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-6 py-3.5 font-bold text-primary transition-all hover:bg-primary/15 sm:px-8 sm:py-4"
-        >
-          <span className="material-symbols-outlined">token</span>
-          $M2M Token
-        </Link>
         <button
           type="button"
           onClick={() => {
